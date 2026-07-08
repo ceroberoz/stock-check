@@ -1,0 +1,205 @@
+# Roadmap — IDX Stock Checker (yahoo-finance)
+
+A Python CLI tool to check Indonesian stock prices from Bursa Efek Indonesia (IDX) via Yahoo Finance. Run with `uv`:
+
+```bash
+uv stock-check --check BBCA --day 1
+```
+
+All features below are weighted by **Eisenhower Matrix** urgency/importance.
+
+---
+
+## Eisenhower Matrix Legend
+
+| Quadrant | Label | Priority |
+|---|---|---|
+| **Q1 — Urgent & Important** | 🏆 **Must Have** | Do first |
+| **Q2 — Not Urgent & Important** | 📅 **Should Have** | Schedule |
+| **Q3 — Urgent & Not Important** | 🙋 **Could Have** | Delegate / next sprints |
+| **Q4 — Not Urgent & Not Important** | 🗓️ **Won't Have (yet)** | Later / maybe never |
+
+---
+
+## 🏆 Q1 — Must Have (Do First)
+
+| # | Feature | Why | Delivery |
+|---|---|---|---|
+| 1.1 | **`pyproject.toml` scaffold** with `[project.scripts]` entry (`stock-check`) so `uv stock-check …` works | Core UX: user runs the tool with `uv`, no manual install | Sprint 1 |
+| 1.2 | **CLI arg parser** — `--check` (symbol), `--day` (lookback days), `--interval` (candle interval, default `1d`) | Minimal viable interface | Sprint 1 |
+| 1.3 | **yfinance integration** — fetch historical OHLCV data for a given ticker + period | Data source — nothing works without data | Sprint 1 |
+| 1.4 | **Auto `.JK` suffix** for Indonesian stocks (e.g. `BBCA` → `BBCA.JK`) | IDX stocks require `.JK` on Yahoo Finance | Sprint 1 |
+| 1.5 | **Moving Average calculation** — rolling mean via `pandas.Series.rolling().mean()` | The core metric the user asked for | Sprint 1 |
+| 1.6 | **Executive summary output** (printed to stdout) — includes ticker, date range, last price, MA values, simple trend signal | The deliverable — what the user sees | Sprint 1 |
+
+### Must Have — Acceptance Criteria
+
+```
+$ uv stock-check --check BBCA --day 1
+╔══════════════════════════════════════════════╗
+║  IDX Stock Checker — Executive Summary      ║
+╠══════════════════════════════════════════════╣
+║  Ticker    : BBCA.JK                         ║
+║  Exchange  : Jakarta Stock Exchange          ║
+║  Date      : 2026-07-08                      ║
+║  Period    : 1 trading day(s)                ║
+║  Interval  : 1d                              ║
+║──────────────────────────────────────────────║
+║  Last Price   : Rp 10.200                    ║
+║  Change       : +125 (+1.24%)                ║
+║  Open / High  : 10.100 / 10.250              ║
+║  Low  / Close : 10.050 / 10.200              ║
+║──────────────────────────────────────────────║
+║  Moving Averages (MA)                        ║
+║    MA5   (1w) : 10.050  ▲  bullish           ║
+║    MA9   (2w) : 9.980   ▲  bullish           ║
+║    MA20  (1m) : 9.750   ▲  bullish           ║
+║──────────────────────────────────────────────║
+║  Signal : STRONG BUY  (price above all MAs)  ║
+╚══════════════════════════════════════════════╝
+```
+
+---
+
+## 📅 Q2 — Should Have (Schedule)
+
+| # | Feature | Why | Delivery |
+|---|---|---|---|
+| 2.1 | **Smart MA period selection** based on `--interval` | MA5/9/20 makes sense for `1d` interval but not for `1wk` or `1mo` | Sprint 2 |
+| 2.2 | **Error handling** — invalid symbol, network failure, no data, rate limit | Without this the tool crashes on bad input | Sprint 2 |
+| 2.3 | **`--interval` flag** support (`1d`, `1wk`, `1mo`, `5d`, `1h`) | Users may want weekly/monthly views, not just daily | Sprint 2 |
+| 2.4 | **Multiple tickers** — `--check BBCA,BBRI,ASII` | Compare stocks in one run | Sprint 2 |
+| 2.5 | **Rich(r) formatting** — colours (green/red for up/down), table alignment, unicode box-drawing | Readability at a glance | Sprint 2 |
+| 2.6 | **Help flag** — `--help` with full docs for all flags | Basic UX courtesy | Sprint 2 |
+
+### Smart MA Period Strategy (Q2.1 detail)
+
+The MA periods adapt dynamically to the candle interval so they map to roughly the same *time spans*:
+
+| `--interval` | MA periods | Time-span meaning |
+|---|---|---|
+| `1d` (daily) | MA5, MA9, MA20, MA50 | 1w, 2w, 1m, 2.5m |
+| `1wk` (weekly) | MA4, MA12, MA24 | 1m, 1q, 6m |
+| `1mo` (monthly) | MA3, MA6, MA12 | 1q, 6m, 1y |
+| `5d` | MA5, MA9 | 25d, 45d |
+| `1h` (hourly) | MA12, MA26, MA50 | ~half-day, ~week, ~2weeks |
+
+> **Rationale:** Fixed MA periods (5/9/20) on daily candles map to ~calendar periods (1w/2w/1m). When the candle interval changes, the MA periods shift so the *time horizon stays consistent*. If the user wants raw periods they can override with a `--ma 5,9,20,50` flag (Q3).
+
+---
+
+## 🙋 Q3 — Could Have (Next Sprints)
+
+| # | Feature | Why | Notes |
+|---|---|---|---|
+| 3.1 | **RSI (Relative Strength Index)** and **MACD** indicators | RSI is the single highest-signal companion to MA for retail traders | Needs `ta-lib` or manual calc |
+| 3.2 | **Volume analysis** — average volume, volume spike detection | Confirms price moves | |
+| 3.3 | **`--start / --end`** date range instead of `--day` | Power users want arbitrary range | |
+| 3.4 | **JSON / CSV output** via `--format json|csv` | Pipe-able to other tools | |
+| 3.5 | **Caching** — cache yfinance responses for N minutes (`--cache-ttl 300`) | Speed up repeated runs on same ticker | |
+| 3.6 | **`--ma` override** — user-specified MA periods (`--ma 5,9,20,50`) | Power users may want custom periods | |
+| 3.7 | **Support for other exchanges** — set globally (`--exchange .JK`) or per-ticker | Makes the tool generic beyond IDX | |
+| 3.8 | **Tabulate output** — alignment, pipe/column separation | Readable multi-ticker output | |
+
+---
+
+## 🗓️ Q4 — Won't Have (Yet) / Later
+
+| # | Feature | Why not now |
+|---|---|---|
+| 4.1 | **Real-time / WebSocket streaming** | Overkill for a CLI checker; adds complexity, socket management |
+| 4.2 | **GUI / Web dashboard** | Scope creep — this is a CLI tool |
+| 4.3 | **ML price prediction** | No reliable model exists; false confidence is dangerous |
+| 4.4 | **Portfolio tracker** (P&L, holdings) | Different product entirely |
+| 4.5 | **Backtesting engine** | Massive scope — would need strategy DSL, slippage model, etc. |
+| 4.6 | **Notification / alerting** (email, Telegram, Slack) | Better served by dedicated alerting infra |
+| 4.7 | **Auto-update / version manager** | `uv` handles this already |
+
+---
+
+## Suggested Architecture
+
+```
+stock-checker/
+├── pyproject.toml             # uv project config + entry point
+├── src/
+│   └── stock_checker/
+│       ├── __init__.py
+│       ├── __main__.py        # `uv run stock-checker` fallback
+│       ├── cli.py             # argparse, entry point
+│       ├── fetcher.py         # yfinance wrapper, .JK suffix logic
+│       ├── indicators.py      # MA calc, future RSI/MACD
+│       ├── formatter.py       # terminal output formatting
+│       └── config.py          # defaults, constants
+├── tests/
+│   ├── test_cli.py
+│   ├── test_fetcher.py
+│   └── test_indicators.py
+└── roadmap.md
+```
+
+### Key `pyproject.toml` fields
+
+```toml
+[project]
+name = "stock-checker"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "yfinance>=0.2.50",
+    "pandas>=2.0",
+]
+
+[project.scripts]
+stock-check = "stock_checker.cli:main"
+```
+
+### Core tech decisions
+
+| Decision | Choice | Why |
+|---|---|---|
+| Dependencies | `yfinance` + `pandas` only (core); `rich` or `tabulate` optional | Minimal surface area — `uv` installs fast |
+| CLI framework | `argparse` (stdlib) | Zero dependencies, good enough |
+| Indonesian stocks | Auto `.JK` suffix via internal lookup | User types `BBCA`, not `BBCA.JK` |
+| MA calculation | `pandas.Series.rolling(window=N).mean()` | Built into pandas, no extra deps |
+| Output encoding | UTF-8 with box-drawing characters | Clean terminal display on macOS/Linux |
+
+### MA edge cases (must handle)
+
+| Case | Behaviour |
+|---|---|
+| `--day 1` with `MA20` | Fetch 30+ days of data internally, calculate MA20, but only **show** the last 1 day's summary |
+| Insufficient data for requested MA | Emit warning, show MAs that *can* be calculated, skip the rest |
+| Stock just listed (< 20 days of history) | Fall back to available MAs (e.g. only MA5, MA9), warn user |
+
+---
+
+## Dependency Graph (Must Have → Should Have)
+
+```
+1.1 pyproject.toml scaffold     ←── no deps
+1.2 CLI arg parser              ←── 1.1
+1.3 yfinance integration        ←── 1.2 (needs symbol from CLI)
+1.4 Auto .JK suffix             ←── 1.2, 1.3 (applied during fetch)
+1.5 MA calculation              ←── 1.3 (needs OHLCV data)
+1.6 Executive summary output    ←── 1.4, 1.5
+                                    │
+2.1 Smart MA periods ───────────┘  needs indicator engine
+2.2 Error handling ─────────────── needs fetcher (1.3)
+2.3 --interval flag ────────────── needs fetcher + MA
+2.4 Multiple tickers ───────────── needs CLI + fetcher
+2.5 Rich formatting ────────────── needs formatter (1.6)
+```
+
+## Sprint Plan
+
+| Sprint | Focus | Items |
+|---|---|---|
+| **Sprint 1** | Core (Must Have) | 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 |
+| **Sprint 2** | Hardening (Must Have + Should Have) | 2.1, 2.2, 2.6, 2.3 |
+| **Sprint 3** | Multi-ticker + formatting | 2.4, 2.5 |
+| **Sprint 4+** | Q3 items | 3.1–3.8 (pick by popularity) |
+
+---
+
+*Last updated: 2026-07-08*

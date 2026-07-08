@@ -1,0 +1,23 @@
+[project]
+name = "stock-checker"
+version = "0.1.0"
+description = "CLI tool to check Indonesian stock prices from IDX via Yahoo Finance"
+requires-python = ">=3.11"
+dependencies = [
+    "yfinance>=0.2.50",
+    "pandas>=2.0",
+]
+
+[project.scripts]
+stock-check = "stock_checker.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
