@@ -3,6 +3,8 @@
 import argparse
 import logging
 
+from rich import print as rprint
+
 from stock_checker.fetcher import fetch_stock_data
 from stock_checker.formatter import format_summary
 from stock_checker.indicators import calculate_mas, determine_signal
@@ -52,15 +54,15 @@ def main() -> None:
             mas = calculate_mas(hist, interval=args.interval)
             signal = determine_signal(data["last_price"], mas)
 
-            print(format_summary(data, mas, signal, interval=args.interval))
-            print()
+            rprint(format_summary(data, mas, signal, interval=args.interval))
+            rprint()
         except ValueError as e:
-            print(f"Error: {e}\n")
+            rprint(f"Error: {e}\n")
         except ConnectionError as e:
-            print(f"Network error for {symbol}: {e}\n")
+            rprint(f"Network error for {symbol}: {e}\n")
         except Exception as e:
             logger.exception("Unexpected error for %s", symbol)
-            print(f"Unexpected error for {symbol}: {e}\n")
+            rprint(f"Unexpected error for {symbol}: {e}\n")
 
 
 if __name__ == "__main__":
