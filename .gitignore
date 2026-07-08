@@ -1,0 +1,21 @@
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── uv / virtualenv ──
+.venv/
+
+# ── OpenCode session state ──
+.omo/run-continuation/
+
+# ── IDE / editors ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
