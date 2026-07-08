@@ -7,7 +7,7 @@ from rich import print as rprint
 
 from stock_checker.fetcher import fetch_stock_data
 from stock_checker.formatter import format_summary
-from stock_checker.indicators import calculate_mas, determine_signal
+from stock_checker.indicators import calculate_macd, calculate_mas, calculate_rsi, determine_signal
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +53,14 @@ def main() -> None:
 
             mas = calculate_mas(hist, interval=args.interval)
             signal = determine_signal(data["last_price"], mas)
+            rsi = calculate_rsi(hist)
+            macd = calculate_macd(hist)
 
-            rprint(format_summary(data, mas, signal, interval=args.interval))
+            rprint(
+                format_summary(
+                    data, mas, signal, interval=args.interval, rsi=rsi, macd=macd
+                )
+            )
             rprint()
         except ValueError as e:
             rprint(f"Error: {e}\n")

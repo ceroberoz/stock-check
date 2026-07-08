@@ -16,6 +16,41 @@ _SIGNAL_COLORS: dict[str, str] = {
     "STRONG SELL": "bold red",
 }
 
+_ACTIONS: dict[str, str] = {
+    "STRONG BUY": "HOLD",
+    "BUY": "ACCUM",
+    "NEUTRAL": "WAIT",
+    "SELL": "AVOID",
+    "STRONG SELL": "EXIT",
+}
+
+
+def _action_detail(signal_label: str, mas: dict[str, float], lp: float) -> str:
+    """One-line action note referencing the key MA level."""
+    if not mas:
+        return "insufficient data"
+
+    sorted_items = sorted(mas.items(), key=lambda x: int(x[0].replace("MA", "")))
+
+    if signal_label == "STRONG BUY":
+        label, val = sorted_items[-1]
+        return f"stop {label} {val:,.0f}"
+    elif signal_label == "BUY":
+        label, val = sorted_items[-1]
+        return f"need {label} {val:,.0f}"
+    elif signal_label == "NEUTRAL":
+        return "await MA crossover"
+    elif signal_label == "SELL":
+        for label, val in sorted_items:
+            if val > lp:
+                return f"resist {label} {val:,.0f}"
+        label, val = sorted_items[-1]
+        return f"resist {label} {val:,.0f}"
+    elif signal_label == "STRONG SELL":
+        label, val = sorted_items[0]
+        return f"resist {label} {val:,.0f}"
+    return ""
+
 
 def _sep(char: str = "═") -> str:
     return f"║{char * WIDTH}║"
@@ -34,7 +69,9 @@ def _section_header(text: str) -> str:
     return f"║  {text:<{WIDTH - 4}}  ║"
 
 
-def _colorize(lines: list[str], data: dict, signal: tuple[str, str]) -> list[str]:
+def _colorize(
+    lines: list[str], data: dict, signal: tuple[str, str], **kwargs: object
+) -> list[str]:
     """Apply rich markup to rendered lines for terminal color.
 
     Colors are applied *after* alignment so padding stays correct — rich
@@ -43,6 +80,9 @@ def _colorize(lines: list[str], data: dict, signal: tuple[str, str]) -> list[str
     change = data.get("change", 0)
     change_color = "green" if change >= 0 else "red"
     signal_label = signal[0]
+    action_label = _ACTIONS.get(signal_label, "")
+    rsi = kwargs.get("rsi")
+    macd = kwargs.get("macd")
 
     colored: list[str] = []
     for line in lines:
@@ -53,22 +93,53 @@ def _colorize(lines: list[str], data: dict, signal: tuple[str, str]) -> list[str
                 wrapped = f"[{change_color}]{m.group()}[/{change_color}]"
                 line = line[: m.start()] + wrapped + line[m.end() :]
 
+        # RSI status color
+        elif "RSI" in line and (
+            "overbought" in line or "oversold" in line or "neutral" in line
+        ):
+            if "overbought" in line:
+                line = line.replace("overbought", "[red]overbought[/red]")
+            elif "oversold" in line:
+                line = line.replace("oversold", "[green]oversold[/green]")
+            elif "neutral" in line:
+                line = line.replace("neutral", "[yellow]neutral[/yellow]")
+
+        # MACD: MACD arrows and trend labels
+        elif "MACD" in line and "▲" in line and "bullish" in line:
+            line = line.replace("▲  bullish", "[green]▲  bullish[/green]")
+        elif "MACD" in line and "▼" in line and "bearish" in line:
+            line = line.replace("▼  bearish", "[red]▼  bearish[/red]")
+
         # MA arrows and trend labels
         elif "▲" in line and "bullish" in line:
             line = line.replace("▲  bullish", "[green]▲  bullish[/green]")
         elif "▼" in line and "bearish" in line:
             line = line.replace("▼  bearish", "[red]▼  bearish[/red]")
 
-        # Signal line
-        elif signal_label in line:
+        # Signal / Action lines
+        elif signal_label in line or action_label in line:
             sig_color = _SIGNAL_COLORS.get(signal_label, "")
             if sig_color:
-                line = line.replace(
-                    signal_label, f"[{sig_color}]{signal_label}[/{sig_color}]"
-                )
+                if signal_label in line:
+                    line = line.replace(
+                        signal_label, f"[{sig_color}]{signal_label}[/{sig_color}]"
+                    )
+                if action_label in line:
+                    line = line.replace(
+                        action_label, f"[{sig_color}]{action_label}[/{sig_color}]"
+                    )
 
         colored.append(line)
     return colored
+
+
+def _rsi_status(rsi: float) -> str:
+    """Classify RSI as overbought (>70), oversold (<30), or neutral."""
+    if rsi >= 70:
+        return "overbought"
+    if rsi <= 30:
+        return "oversold"
+    return "neutral"
 
 
 def format_summary(
@@ -76,6 +147,8 @@ def format_summary(
     mas: dict[str, float],
     signal: tuple[str, str],
     interval: str = "1d",
+    rsi: float | None = None,
+    macd: dict[str, float] | None = None,
 ) -> str:
     """Build the full executive summary box table with rich markup."""
     today = date.today().isoformat()
@@ -118,12 +191,39 @@ def format_summary(
 
     lines.append(_sep("─"))
 
+    # ── oscillators (RSI / MACD) ──
+    if rsi is not None or macd is not None:
+        lines.append(_section_header("Oscillators"))
+
+    if rsi is not None:
+        rsi_label = _rsi_status(rsi)
+        rsi_text = f"  RSI(14)     : {rsi:>7.2f}  {rsi_label}"
+        lines.append(f"║  {rsi_text:<{WIDTH - 4}}  ║")
+
+    if macd is not None:
+        hist_val = macd["histogram"]
+        macd_arrow = "▲" if hist_val >= 0 else "▼"
+        macd_trend = "bullish" if hist_val >= 0 else "bearish"
+        macd_line = macd["macd"]
+        macd_text = (
+            f"  MACD(12/26/9) : {hist_val:>+8,.0f}  {macd_arrow}  {macd_trend}"
+        )
+        lines.append(f"║  {macd_text:<{WIDTH - 4}}  ║")
+
+    lines.append(_sep("─"))
+
     # ── signal ──
     signal_label, signal_desc = signal
     signal_text = f"  Signal : {signal_label}  ({signal_desc})"
     lines.append(f"║{signal_text:^{WIDTH}}║")
 
+    # ── action recommendation ──
+    action_label = _ACTIONS.get(signal_label, "")
+    action_detail = _action_detail(signal_label, mas, data["last_price"])
+    action_text = f"  Action : {action_label}  ({action_detail})"
+    lines.append(f"║{action_text:^{WIDTH}}║")
+
     # ── bottom ──
     lines.append("╚" + "═" * WIDTH + "╝")
 
-    return "\n".join(_colorize(lines, data, signal))
+    return "\n".join(_colorize(lines, data, signal, rsi=rsi, macd=macd))
