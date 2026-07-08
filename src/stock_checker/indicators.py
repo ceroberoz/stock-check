@@ -1,4 +1,4 @@
-"""Technical indicators — moving averages and trend signals."""
+"""Technical indicators — moving averages, RSI, MACD, and trend signals."""
 
 import pandas as pd
 
@@ -59,6 +59,68 @@ def calculate_mas(
         if len(close) >= window:
             mas[label] = round(close.rolling(window=window).mean().iloc[-1], 2)
     return mas
+
+
+def calculate_rsi(
+    hist: pd.DataFrame, period: int = 14
+) -> float | None:
+    """Calculate Relative Strength Index using Wilder's smoothing.
+
+    Returns ``None`` when there are fewer than ``period + 1`` candles.
+    """
+    close = hist["Close"]
+    if len(close) < period + 1:
+        return None
+
+    delta = close.diff()
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+
+    # Initial SMA over the first N periods
+    avg_gain = gain.iloc[1 : period + 1].mean()
+    avg_loss = loss.iloc[1 : period + 1].mean()
+
+    if avg_loss == 0:
+        return 100.0
+
+    # Wilder smoothing: (prev_avg * (N-1) + current) / N
+    for i in range(period + 1, len(gain)):
+        avg_gain = (avg_gain * (period - 1) + gain.iloc[i]) / period
+        avg_loss = (avg_loss * (period - 1) + loss.iloc[i]) / period
+
+    rs = avg_gain / avg_loss
+    rsi = 100.0 - (100.0 / (1.0 + rs))
+    return round(rsi, 2)
+
+
+def calculate_macd(
+    hist: pd.DataFrame,
+    fast: int = 12,
+    slow: int = 26,
+    signal: int = 9,
+) -> dict[str, float] | None:
+    """Calculate MACD line, signal line, and histogram.
+
+    Returns ``None`` when there are fewer than ``slow`` candles.
+
+    Returned dict keys: ``macd`` (MACD line), ``signal`` (signal line),
+    ``histogram`` (MACD line - signal line).
+    """
+    close = hist["Close"]
+    if len(close) < slow:
+        return None
+
+    ema_fast = close.ewm(span=fast, adjust=False).mean()
+    ema_slow = close.ewm(span=slow, adjust=False).mean()
+    macd_line = ema_fast - ema_slow
+    signal_line = macd_line.ewm(span=signal, adjust=False).mean()
+    histogram = macd_line - signal_line
+
+    return {
+        "macd": round(macd_line.iloc[-1], 2),
+        "signal": round(signal_line.iloc[-1], 2),
+        "histogram": round(histogram.iloc[-1], 2),
+    }
 
 
 def determine_signal(
