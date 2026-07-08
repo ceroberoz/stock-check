@@ -2,30 +2,60 @@
 
 import pandas as pd
 
-# Window → display-label mapping (for daily interval)
-MA_WINDOWS: dict[str, int] = {
-    "MA5": 5,
-    "MA9": 9,
-    "MA20": 20,
+# Which MA windows to calculate for each candle interval.
+# Maps from interval → {label: window_size}
+_INTERVAL_MAS: dict[str, dict[str, int]] = {
+    "1d": {"MA5": 5, "MA9": 9, "MA20": 20, "MA50": 50},
+    "1wk": {"MA4": 4, "MA12": 12, "MA24": 24},
+    "1mo": {"MA3": 3, "MA6": 6, "MA12": 12},
+    "5d": {"MA5": 5, "MA9": 9},
+    "1h": {"MA12": 12, "MA26": 26, "MA50": 50},
 }
 
-# Human-readable period labels keyed by MA name
-MA_PERIOD_LABELS: dict[str, str] = {
-    "MA5": "1w",
-    "MA9": "2w",
-    "MA20": "1m",
+# Human-readable time-span label for each MA label, per interval.
+_INTERVAL_PERIOD_LABELS: dict[str, dict[str, str]] = {
+    "1d": {"MA5": "1w", "MA9": "2w", "MA20": "1m", "MA50": "2.5m"},
+    "1wk": {"MA4": "1m", "MA12": "1q", "MA24": "6m"},
+    "1mo": {"MA3": "1q", "MA6": "6m", "MA12": "1y"},
+    "5d": {"MA5": "25d", "MA9": "45d"},
+    "1h": {"MA12": "~half-day", "MA26": "~week", "MA50": "~2weeks"},
 }
 
 
-def calculate_mas(hist: pd.DataFrame) -> dict[str, float]:
+def _get_ma_defs(interval: str) -> dict[str, int]:
+    """Return the MA window definition for the given *interval*.
+
+    Falls back to ``1d`` windows if *interval* is unknown.
+    """
+    return _INTERVAL_MAS.get(interval, _INTERVAL_MAS["1d"])
+
+
+def _get_period_labels(interval: str) -> dict[str, str]:
+    """Return human-readable period labels for the given *interval*."""
+    return _INTERVAL_PERIOD_LABELS.get(interval, _INTERVAL_PERIOD_LABELS["1d"])
+
+
+def calculate_mas(
+    hist: pd.DataFrame, interval: str = "1d"
+) -> dict[str, float]:
     """Calculate rolling moving averages from OHLCV *hist*.
 
-    Returns a dict like ``{"MA5": 10050.0, "MA9": 9980.0}``, only including
-    windows that have enough data.
+    Parameters
+    ----------
+    hist :
+        OHLCV DataFrame from yfinance.
+    interval :
+        Candle interval used to select the appropriate MA windows.
+
+    Returns
+    -------
+        Dict like ``{"MA5": 10050.0, "MA9": 9980.0}``, only including
+        windows that have enough data.
     """
     close = hist["Close"]
+    ma_defs = _get_ma_defs(interval)
     mas: dict[str, float] = {}
-    for label, window in MA_WINDOWS.items():
+    for label, window in ma_defs.items():
         if len(close) >= window:
             mas[label] = round(close.rolling(window=window).mean().iloc[-1], 2)
     return mas

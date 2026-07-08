@@ -2,7 +2,7 @@
 
 from datetime import date
 
-from stock_checker.indicators import MA_PERIOD_LABELS
+from stock_checker.indicators import _get_period_labels
 
 # Inner content width (sans the ║ borders)
 WIDTH = 46
@@ -31,11 +31,13 @@ def format_summary(
     data: dict,
     mas: dict[str, float],
     signal: tuple[str, str],
+    interval: str = "1d",
 ) -> str:
     """Build the full executive summary box table to stdout."""
     today = date.today().isoformat()
     signal_label, signal_desc = signal
     lp = data["last_price"]
+    period_labels = _get_period_labels(interval)
     lines: list[str] = []
 
     # ── top ──
@@ -48,7 +50,7 @@ def format_summary(
     lines.append(_kv("Exchange", "Jakarta Stock Exchange"))
     lines.append(_kv("Date", today))
     lines.append(_kv("Period", data["period"]))
-    lines.append(_kv("Interval", "1d"))
+    lines.append(_kv("Interval", interval))
 
     lines.append(_sep("─"))
 
@@ -68,11 +70,8 @@ def format_summary(
     # ── moving averages ──
     lines.append(_section_header("Moving Averages (MA)"))
 
-    for label in ("MA5", "MA9", "MA20"):
-        if label not in mas:
-            continue
-        value = mas[label]
-        period_lbl = MA_PERIOD_LABELS.get(label, "")
+    for label, value in mas.items():
+        period_lbl = period_labels.get(label, "")
         arrow = "▲" if lp >= value else "▼"
         trend = "bullish" if lp >= value else "bearish"
         ma_text = f"  {label:4s} ({period_lbl}) : {value:>8,.0f}  {arrow}  {trend}"
