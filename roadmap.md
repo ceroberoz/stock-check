@@ -202,4 +202,122 @@ stock-check = "stock_checker.cli:main"
 
 ---
 
-*Last updated: 2026-07-08*
+## Phase 2 — Automated Watcher & Telegram Alerts
+
+New product direction: a headless daemon that watches configured stocks every hour, detects signal changes / crossovers in real-time, and pushes actionable alerts to Telegram. User trades manually — the bot is purely an early-warning system (at least **1 hour before** the signal shows on daily charts).
+
+### Eisenhower Matrix Legend
+
+| Quadrant | Label | Priority |
+|---|---|---|
+| **Q1 — Urgent & Important** | 🏆 **Must Have** | Do first |
+| **Q2 — Not Urgent & Important** | 📅 **Should Have** | Schedule |
+| **Q3 — Urgent & Not Important** | 🙋 **Could Have** | Delegate / next sprints |
+| **Q4 — Not Urgent & Not Important** | 🗓️ **Won't Have (yet)** | Later / maybe never |
+
+### 🏆 Q1 — Must Have (Do First)
+
+| # | Feature | Why | Delivery |
+|---|---|---|---|
+| P1.1 | **`config.yaml`** — stocks list, Telegram creds, alert thresholds, interval, watch schedule | Single source of truth; no hardcoded values | Sprint 1 |
+| P1.2 | **`config.py`** — typed dataclass loader for `config.yaml` | Clean typed access across all modules | Sprint 1 |
+| P1.3 | **State persistence** (`state.json`) — last-known signal, price, MA levels, RSI, MACD per ticker | Needed to detect *changes* between checks | Sprint 1 |
+| P1.4 | **Alert triggers** — signal change detection, MA crossover (golden/death cross), RSI threshold breach, MACD histogram flip | The core intelligence — what fires the alert | Sprint 1 |
+| P1.5 | **Telegram notifier** — push formatted alert messages via Telegram Bot HTTP API | Delivery channel — user gets the alert | Sprint 1 |
+| P1.6 | **Watch loop** (`stock-check watch`) — continuous fetch→analyze→compare→alert→save cycle | The daemon that runs the bot | Sprint 1 |
+
+### 📅 Q2 — Should Have (Schedule)
+
+| # | Feature | Why | Notes |
+|---|---|---|---|
+| P2.1 | **Alert deduplication** — don't re-alert same signal within N hours | Prevents spam during flat/range-bound markets | |
+| P2.2 | **Graceful error handling** — network outage, yfinance rate-limit, invalid symbols | Daemon must survive transient failures without crashing | |
+| P2.3 | **Logging to file** — structured logs with rotation | Debugging and audit trail | |
+| P2.4 | **Boot persistence** — systemd `--user` timer or crontab | Bot restarts automatically after reboot | |
+| P2.5 | **Alert priority levels** — P1 (signal change), P2 (MA crossover), P3 (RSI/MACD) | User can filter noise vs. high-signal alerts | |
+
+### 🙋 Q3 — Could Have (Next)
+
+| # | Feature | Why | Notes |
+|---|---|---|---|
+| P3.1 | **Volume spike detection** — hourly volume > 2x average | Confirms breakout on hourly chart | |
+| P3.2 | **Multiple alert channels** — email, Slack webhook | Flexibility beyond Telegram | |
+| P3.3 | **Per-stock overrides** — different thresholds per ticker | BBCA may have different RSI bands than TLKM | |
+| P3.4 | **`--dry-run` mode** — log what *would* be sent without sending | Safe testing | |
+
+### 🗓️ Q4 — Won't Have (Yet)
+
+| # | Feature | Why not now |
+|---|---|---|
+| P4.1 | **GUI dashboard** | CLI + Telegram push covers the use case; UI is scope creep |
+| P4.2 | **Auto-trading / order execution** | User explicitly wants manual trade — auto-execution adds regulatory + financial risk |
+| P4.3 | **WebSocket real-time feed** | Hourly interval doesn't need sub-second data; yfinance REST is sufficient |
+| P4.4 | **Backtesting engine** | Would need a strategy DSL, slippage model, historical data store — massive scope |
+| P4.5 | **Mobile app** | Telegram *is* the mobile experience |
+
+### Key Design Decisions
+
+| Decision | Choice | Why |
+|---|---|---|
+| Telegram library | Raw HTTP API (`urllib`/`httpx`) | Zero extra deps, simpler error handling |
+| State storage | Local `state.json` | Zero infra, trivially inspectable, survives reboot |
+| Scheduler | Built-in loop in `watcher.py` + crontab | No extra libs, works on any Unix, simple to monitor |
+| Config format | `config.yaml` via `pyyaml` | Human-readable, self-documenting |
+| Interval | 55-minute sleep (not 60) | Avoids drift against the hour boundary; catches candle close ASAP |
+| Alert trigger priority | Signal change > MA crossover > MACD flip > RSI breach | Fight noise; signal change is the strongest actionable alert |
+
+### "1 Hour Early" — How It Works
+
+```
+Hourly candle closes at :00
+         │
+         ▼
+Watcher wakes at ~:01, fetches latest hourly candle
+         │
+         ▼
+Calculates MA12/26/50, RSI(14), MACD(12/26/9) on hourly data
+         │
+         ▼
+Compares vs previous state (state.json):
+  ├─ Signal just flipped?           (NEUTRAL → BUY)
+  ├─ MA crossover happened?         (MA5 crossed above MA20 = golden cross)
+  ├─ RSI entered extreme zone?      (above 70 or below 30)
+  └─ MACD histogram flipped sign?   (bearish → bullish)
+         │
+         ▼
+Any trigger? → Telegram push alert
+No trigger? → silent, just update state.json
+         │
+         ▼
+Sleep 55 min, repeat
+```
+
+**Why this is 1 hour early:** Hourly candles reflect intraday shifts that haven't yet propagated to the daily chart. An MA crossover on the hourly chart typically precedes the daily crossover by 4–8 hours. The watcher catches the moment the hourly candle closes — not minutes later when you'd check manually.
+
+### Dependency Graph (Watcher Phase)
+
+```
+P1.1 config.yaml   ←── no deps
+P1.2 config.py     ←── P1.1 (needs config.yaml schema)
+P1.3 state.json    ←── P1.2 (needs ticker list from config)
+P1.4 alert_engine  ←── P1.2, P1.3 (needs config thresholds + state diff)
+P1.5 notifier      ←── P1.2 (needs Telegram creds)
+P1.6 watcher loop  ←── P1.2, P1.3, P1.4, P1.5 (assembles everything)
+                              │
+P2.1 dedup ───────────────────┘ needs alert_engine + state
+P2.2 error handling ────────── needs watcher loop
+P2.3 logging ───────────────── needs watcher loop
+```
+
+### Sprint Plan
+
+| Sprint | Focus | Items |
+|---|---|---|
+| **Sprint 1** | Core Watcher | P1.1 → P1.2 → P1.3 → P1.4 → P1.5 → P1.6 |
+| **Sprint 2** | Hardening | P2.1, P2.2, P2.3, P2.4 |
+| **Sprint 3** | Alert Quality | P2.5, P3.1, P3.3 |
+| **Sprint 4+** | Multi-channel | P3.2, P3.4 |
+
+---
+
+*Last updated: 2026-07-09*

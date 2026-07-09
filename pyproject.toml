@@ -7,10 +7,12 @@ dependencies = [
     "yfinance>=0.2.50",
     "pandas>=2.0",
     "rich>=13.0",
+    "pyyaml>=6.0",
 ]
 
 [project.scripts]
 stock-check = "stock_checker.cli:main"
+stock-check-watch = "stock_checker.watcher:main"
 
 [build-system]
 requires = ["hatchling"]

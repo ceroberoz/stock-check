@@ -19,3 +19,8 @@ build/
 *.swo
 *~
 .DS_Store
+
+# Trading bot
+config.yaml
+state.json
+*.log

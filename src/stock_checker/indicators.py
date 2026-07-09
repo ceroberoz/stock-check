@@ -143,3 +143,34 @@ def determine_signal(
     if above > total / 3:
         return "SELL", "price below most MAs"
     return "STRONG SELL", "price below all MAs"
+
+
+def calculate_volume_metrics(
+    hist: pd.DataFrame,
+    window: int = 20,
+    multiplier: float = 2.0,
+) -> dict | None:
+    """Calculate volume metrics for spike detection.
+
+    Returns None when there are fewer than ``window + 1`` candles.
+
+    Returned dict keys:
+    - current_volume (float): latest candle volume
+    - avg_volume (float): rolling mean volume over window
+    - volume_spike (bool): current > avg * multiplier
+    - volume_ratio (float): current / avg (rounded to 2 decimals)
+    """
+    volume = hist["Volume"]
+    if len(volume) < window + 1:
+        return None
+
+    avg_volume = volume.iloc[-window:].mean()
+    current_volume = volume.iloc[-1]
+    ratio = current_volume / avg_volume if avg_volume > 0 else 0.0
+
+    return {
+        "current_volume": round(current_volume, 2),
+        "avg_volume": round(avg_volume, 2),
+        "volume_spike": ratio >= multiplier,
+        "volume_ratio": round(ratio, 2),
+    }

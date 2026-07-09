@@ -40,7 +40,7 @@ def _ensure_jk_suffix(symbol: str) -> str:
 
 
 def fetch_history(
-    symbol: str, days: int = 1, interval: str = "1d"
+    symbol: str, days: int = 1, interval: str = "1d", cache_ttl: int = 0
 ) -> tuple[str, pd.DataFrame]:
     """Download OHLCV history for *symbol* with enough data for MA calcs.
 
@@ -60,6 +60,14 @@ def fetch_history(
     ticker = _ensure_jk_suffix(symbol)
     period = _INTERVAL_PERIOD.get(interval, "3mo")
 
+    # Check cache first
+    if cache_ttl > 0:
+        from stock_checker.cache import get_cached_hist
+
+        cached = get_cached_hist(ticker, period, interval, ttl=cache_ttl)
+        if cached is not None:
+            return ticker, cached
+
     stock = yf.Ticker(ticker)
     hist = stock.history(period=period, interval=interval)
 
@@ -68,6 +76,13 @@ def fetch_history(
             f"No data returned for {ticker} with interval={interval}. "
             f"Check the symbol or your network connection."
         )
+
+    # Store in cache
+    if cache_ttl > 0:
+        from stock_checker.cache import set_cached_hist
+
+        set_cached_hist(ticker, period, interval, hist)
+
     return ticker, hist
 
 

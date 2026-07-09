@@ -1,0 +1,51 @@
+# Trading Bot Configuration — copy to config.yaml and fill in
+watch:
+  interval_minutes: 55    # How often to poll (min)
+  stocks:                 # IDX30 constituents (period May–Jul 2026)
+    - AADI
+    - ADMR
+    - ADRO
+    - AMRT
+    - ANTM
+    - ASII
+    - BBCA
+    - BBNI
+    - BBRI
+    - BMRI
+    - BRPT
+    - BUMI
+    - CPIN
+    - EMTK
+    - GOTO
+    - ICBP
+    - INCO
+    - INDF
+    - INKP
+    - JPFA
+    - KLBF
+    - MBMA
+    - MDKA
+    - MEDC
+    - PGAS
+    - PGEO
+    - PTBA
+    - TLKM
+    - UNTR
+    - UNVR
+
+telegram:
+  bot_token: "YOUR_BOT_TOKEN"   # From @BotFather
+  chat_id: "YOUR_CHAT_ID"       # Your Telegram chat ID
+
+alerts:
+  dedup_hours: 24               # Min hours before re-alerting same trigger per ticker
+  signal_change: true            # Alert on signal label change
+  ma_crossover: true             # Alert on MA golden/death cross
+  rsi_breach: true               # Alert on RSI entering overbought/oversold
+  rsi_recovery: true             # Alert on RSI exiting overbought/oversold
+  macd_flip: true                # Alert on MACD histogram sign flip
+  rsi_overbought: 70.0          # RSI overbought threshold
+  rsi_oversold: 30.0            # RSI oversold threshold
+  volume_spike: true             # Alert on volume spike detection
+  volume_spike_window: 20        # Rolling window for avg volume (candles)
+  volume_spike_multiplier: 2.0   # Spike threshold (current > avg * this)
