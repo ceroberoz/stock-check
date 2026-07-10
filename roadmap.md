@@ -8,6 +8,8 @@ uv stock-check --check BBCA --day 1
 
 All features below are weighted by **Eisenhower Matrix** urgency/importance.
 
+**Status Legend:** ✅ Done | 🚧 In Progress | 📋 Todo
+
 ---
 
 ## Eisenhower Matrix Legend
@@ -21,16 +23,18 @@ All features below are weighted by **Eisenhower Matrix** urgency/importance.
 
 ---
 
-## 🏆 Q1 — Must Have (Do First)
+## Phase 1 — CLI Checker
 
-| # | Feature | Why | Delivery |
-|---|---|---|---|
-| 1.1 | **`pyproject.toml` scaffold** with `[project.scripts]` entry (`stock-check`) so `uv stock-check …` works | Core UX: user runs the tool with `uv`, no manual install | Sprint 1 |
-| 1.2 | **CLI arg parser** — `--check` (symbol), `--day` (lookback days), `--interval` (candle interval, default `1d`) | Minimal viable interface | Sprint 1 |
-| 1.3 | **yfinance integration** — fetch historical OHLCV data for a given ticker + period | Data source — nothing works without data | Sprint 1 |
-| 1.4 | **Auto `.JK` suffix** for Indonesian stocks (e.g. `BBCA` → `BBCA.JK`) | IDX stocks require `.JK` on Yahoo Finance | Sprint 1 |
-| 1.5 | **Moving Average calculation** — rolling mean via `pandas.Series.rolling().mean()` | The core metric the user asked for | Sprint 1 |
-| 1.6 | **Executive summary output** (printed to stdout) — includes ticker, date range, last price, MA values, simple trend signal | The deliverable — what the user sees | Sprint 1 |
+### 🏆 Q1 — Must Have (Do First)
+
+| # | Status | Feature | Why | Delivery |
+|---|---|---|---|---|
+| 1.1 | ✅ | **`pyproject.toml` scaffold** with `[project.scripts]` entry (`stock-check`) so `uv stock-check …` works | Core UX: user runs the tool with `uv`, no manual install | Sprint 1 |
+| 1.2 | ✅ | **CLI arg parser** — `--check` (symbol), `--day` (lookback days), `--interval` (candle interval, default `1d`) | Minimal viable interface | Sprint 1 |
+| 1.3 | ✅ | **yfinance integration** — fetch historical OHLCV data for a given ticker + period | Data source — nothing works without data | Sprint 1 |
+| 1.4 | ✅ | **Auto `.JK` suffix** for Indonesian stocks (e.g. `BBCA` → `BBCA.JK`) | IDX stocks require `.JK` on Yahoo Finance | Sprint 1 |
+| 1.5 | ✅ | **Moving Average calculation** — rolling mean via `pandas.Series.rolling().mean()` | The core metric the user asked for | Sprint 1 |
+| 1.6 | ✅ | **Executive summary output** (printed to stdout) — includes ticker, date range, last price, MA values, simple trend signal | The deliverable — what the user sees | Sprint 1 |
 
 ### Must Have — Acceptance Criteria
 
@@ -63,15 +67,15 @@ $ uv stock-check --check BBCA --day 1
 
 ## 📅 Q2 — Should Have (Schedule)
 
-| # | Feature | Why | Delivery |
-|---|---|---|---|
-| 2.1 | **Smart MA period selection** based on `--interval` | MA5/9/20 makes sense for `1d` interval but not for `1wk` or `1mo` | Sprint 2 |
-| 2.2 | **Error handling** — invalid symbol, network failure, no data, rate limit | Without this the tool crashes on bad input | Sprint 2 |
-| 2.3 | **`--interval` flag** support (`1d`, `1wk`, `1mo`, `5d`, `1h`) | Users may want weekly/monthly views, not just daily | Sprint 2 |
-| 2.4 | **Multiple tickers** — `--check BBCA,BBRI,ASII` | Compare stocks in one run | Sprint 2 |
-| 2.5 | **Rich(r) formatting** — colours (green/red for up/down), table alignment, unicode box-drawing | Readability at a glance | Sprint 2 |
-| 2.6 | **Help flag** — `--help` with full docs for all flags | Basic UX courtesy | Sprint 2 |
-| 2.7 | **IDX30 list view** — `--list idx30` shows all IDX30 stocks in a compact table | Quick market overview without checking each ticker individually | Sprint 3 |
+| # | Status | Feature | Why | Delivery |
+|---|---|---|---|---|
+| 2.1 | ✅ | **Smart MA period selection** based on `--interval` | MA5/9/20 makes sense for `1d` interval but not for `1wk` or `1mo` | Sprint 2 |
+| 2.2 | ✅ | **Error handling** — invalid symbol, network failure, no data, rate limit | Without this the tool crashes on bad input | Sprint 2 |
+| 2.3 | ✅ | **`--interval` flag** support (`1d`, `1wk`, `1mo`, `5d`, `1h`) | Users may want weekly/monthly views, not just daily | Sprint 2 |
+| 2.4 | ✅ | **Multiple tickers** — `--check BBCA,BBRI,ASII` | Compare stocks in one run | Sprint 2 |
+| 2.5 | ✅ | **Rich(r) formatting** — colours (green/red for up/down), table alignment, unicode box-drawing | Readability at a glance | Sprint 2 |
+| 2.6 | ✅ | **Help flag** — `--help` with full docs for all flags | Basic UX courtesy | Sprint 2 |
+| 2.7 | ✅ | **IDX30 list view** — `--list idx30` shows all IDX30 stocks in a compact table | Quick market overview without checking each ticker individually | Sprint 3 |
 
 ### Smart MA Period Strategy (Q2.1 detail)
 
@@ -149,30 +153,30 @@ uv stock-check --list idx30
 
 ## 🙋 Q3 — Could Have (Next Sprints)
 
-| # | Feature | Why | Notes |
-|---|---|---|---|
-| 3.1 | **RSI (Relative Strength Index)** and **MACD** indicators | RSI is the single highest-signal companion to MA for retail traders | Needs `ta-lib` or manual calc |
-| 3.2 | **Volume analysis** — average volume, volume spike detection | Confirms price moves | |
-| 3.3 | **`--start / --end`** date range instead of `--day` | Power users want arbitrary range | |
-| 3.4 | **JSON / CSV output** via `--format json|csv` | Pipe-able to other tools | |
-| 3.5 | **Caching** — cache yfinance responses for N minutes (`--cache-ttl 300`) | Speed up repeated runs on same ticker | |
-| 3.6 | **`--ma` override** — user-specified MA periods (`--ma 5,9,20,50`) | Power users may want custom periods | |
-| 3.7 | **Support for other exchanges** — set globally (`--exchange .JK`) or per-ticker | Makes the tool generic beyond IDX | |
-| 3.8 | **Tabulate output** — alignment, pipe/column separation | Readable multi-ticker output | |
+| # | Status | Feature | Why | Notes |
+|---|---|---|---|---|
+| 3.1 | ✅ | **RSI (Relative Strength Index)** and **MACD** indicators | RSI is the single highest-signal companion to MA for retail traders | Needs `ta-lib` or manual calc |
+| 3.2 | ✅ | **Volume analysis** — average volume, volume spike detection | Confirms price moves | |
+| 3.3 | 📋 | **`--start / --end`** date range instead of `--day` | Power users want arbitrary range | |
+| 3.4 | 📋 | **JSON / CSV output** via `--format json|csv` | Pipe-able to other tools | |
+| 3.5 | ✅ | **Caching** — cache yfinance responses for N minutes (`--cache-ttl 300`) | Speed up repeated runs on same ticker | |
+| 3.6 | 📋 | **`--ma` override** — user-specified MA periods (`--ma 5,9,20,50`) | Power users may want custom periods | |
+| 3.7 | 📋 | **Support for other exchanges** — set globally (`--exchange .JK`) or per-ticker | Makes the tool generic beyond IDX | |
+| 3.8 | 📋 | **Tabulate output** — alignment, pipe/column separation | Readable multi-ticker output | |
 
 ---
 
 ## 🗓️ Q4 — Won't Have (Yet) / Later
 
-| # | Feature | Why not now |
-|---|---|---|
-| 4.1 | **Real-time / WebSocket streaming** | Overkill for a CLI checker; adds complexity, socket management |
-| 4.2 | **GUI / Web dashboard** | Scope creep — this is a CLI tool |
-| 4.3 | **ML price prediction** | No reliable model exists; false confidence is dangerous |
-| 4.4 | **Portfolio tracker** (P&L, holdings) | Different product entirely |
-| 4.5 | **Backtesting engine** | Massive scope — would need strategy DSL, slippage model, etc. |
-| 4.6 | **Notification / alerting** (email, Telegram, Slack) | Better served by dedicated alerting infra |
-| 4.7 | **Auto-update / version manager** | `uv` handles this already |
+| # | Status | Feature | Why not now |
+|---|---|---|---|
+| 4.1 | 📋 | **Real-time / WebSocket streaming** | Overkill for a CLI checker; adds complexity, socket management |
+| 4.2 | 📋 | **GUI / Web dashboard** | Scope creep — this is a CLI tool |
+| 4.3 | 📋 | **ML price prediction** | No reliable model exists; false confidence is dangerous |
+| 4.4 | 📋 | **Portfolio tracker** (P&L, holdings) | Different product entirely |
+| 4.5 | 📋 | **Backtesting engine** | Massive scope — would need strategy DSL, slippage model, etc. |
+| 4.6 | ✅ | **Notification / alerting** (email, Telegram, Slack) | Better served by dedicated alerting infra |
+| 4.7 | 📋 | **Auto-update / version manager** | `uv` handles this already |
 
 ---
 
@@ -253,12 +257,12 @@ stock-check = "stock_checker.cli:main"
 
 ## Sprint Plan
 
-| Sprint | Focus | Items |
-|---|---|---|
-| **Sprint 1** | Core (Must Have) | 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 |
-| **Sprint 2** | Hardening (Must Have + Should Have) | 2.1, 2.2, 2.6, 2.3 |
-| **Sprint 3** | Multi-ticker + formatting + list view | 2.4, 2.5, 2.7 |
-| **Sprint 4+** | Q3 items | 3.1–3.8 (pick by popularity) |
+| Sprint | Focus | Items | Status |
+|---|---|---|---|
+| **Sprint 1** | Core (Must Have) | 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 | ✅ Done |
+| **Sprint 2** | Hardening (Must Have + Should Have) | 2.1, 2.2, 2.6, 2.3 | ✅ Done |
+| **Sprint 3** | Multi-ticker + formatting + list view | 2.4, 2.5, 2.7 | ✅ Done |
+| **Sprint 4+** | Q3 items | 3.1–3.8 (pick by popularity) | 📋 Next |
 
 ---
 
@@ -277,42 +281,42 @@ New product direction: a headless daemon that watches configured stocks every ho
 
 ### 🏆 Q1 — Must Have (Do First)
 
-| # | Feature | Why | Delivery |
-|---|---|---|---|
-| P1.1 | **`config.yaml`** — stocks list, Telegram creds, alert thresholds, interval, watch schedule | Single source of truth; no hardcoded values | Sprint 1 |
-| P1.2 | **`config.py`** — typed dataclass loader for `config.yaml` | Clean typed access across all modules | Sprint 1 |
-| P1.3 | **State persistence** (`state.json`) — last-known signal, price, MA levels, RSI, MACD per ticker | Needed to detect *changes* between checks | Sprint 1 |
-| P1.4 | **Alert triggers** — signal change detection, MA crossover (golden/death cross), RSI threshold breach, MACD histogram flip | The core intelligence — what fires the alert | Sprint 1 |
-| P1.5 | **Telegram notifier** — push formatted alert messages via Telegram Bot HTTP API | Delivery channel — user gets the alert | Sprint 1 |
-| P1.6 | **Watch loop** (`stock-check watch`) — continuous fetch→analyze→compare→alert→save cycle | The daemon that runs the bot | Sprint 1 |
+| # | Status | Feature | Why | Delivery |
+|---|---|---|---|---|
+| P1.1 | ✅ | **`config.yaml`** — stocks list, Telegram creds, alert thresholds, interval, watch schedule | Single source of truth; no hardcoded values | Sprint 1 |
+| P1.2 | ✅ | **`config.py`** — typed dataclass loader for `config.yaml` | Clean typed access across all modules | Sprint 1 |
+| P1.3 | ✅ | **State persistence** (`state.json`) — last-known signal, price, MA levels, RSI, MACD per ticker | Needed to detect *changes* between checks | Sprint 1 |
+| P1.4 | ✅ | **Alert triggers** — signal change detection, MA crossover (golden/death cross), RSI threshold breach, MACD histogram flip | The core intelligence — what fires the alert | Sprint 1 |
+| P1.5 | ✅ | **Telegram notifier** — push formatted alert messages via Telegram Bot HTTP API | Delivery channel — user gets the alert | Sprint 1 |
+| P1.6 | ✅ | **Watch loop** (`stock-check watch`) — continuous fetch→analyze→compare→alert→save cycle | The daemon that runs the bot | Sprint 1 |
 
 ### 📅 Q2 — Should Have (Schedule)
 
-| # | Feature | Why | Notes |
-|---|---|---|---|
-| P2.1 | **Alert deduplication** — don't re-alert same signal within N hours | Prevents spam during flat/range-bound markets | |
-| P2.2 | **Graceful error handling** — network outage, yfinance rate-limit, invalid symbols | Daemon must survive transient failures without crashing | |
-| P2.3 | **Logging to file** — structured logs with rotation | Debugging and audit trail | |
-| P2.4 | **Boot persistence** — systemd `--user` timer or crontab | Bot restarts automatically after reboot | |
-| P2.5 | **Alert priority levels** — P1 (signal change), P2 (MA crossover), P3 (RSI/MACD) | User can filter noise vs. high-signal alerts | |
+| # | Status | Feature | Why | Notes |
+|---|---|---|---|---|
+| P2.1 | ✅ | **Alert deduplication** — don't re-alert same signal within N hours | Prevents spam during flat/range-bound markets | |
+| P2.2 | ✅ | **Graceful error handling** — network outage, yfinance rate-limit, invalid symbols | Daemon must survive transient failures without crashing | |
+| P2.3 | ✅ | **Logging to file** — structured logs with rotation | Debugging and audit trail | |
+| P2.4 | 📋 | **Boot persistence** — systemd `--user` timer or crontab | Bot restarts automatically after reboot | |
+| P2.5 | 📋 | **Alert priority levels** — P1 (signal change), P2 (MA crossover), P3 (RSI/MACD) | User can filter noise vs. high-signal alerts | |
 
 ### 🙋 Q3 — Could Have (Next)
 
-| # | Feature | Why | Notes |
-|---|---|---|---|
-| P3.1 | **Volume spike detection** — hourly volume > 2x average | Confirms breakout on hourly chart | |
-| P3.2 | **Multiple alert channels** — email, Slack webhook | Flexibility beyond Telegram | |
-| P3.3 | **Per-stock overrides** — different thresholds per ticker | BBCA may have different RSI bands than TLKM | |
-| P3.4 | **`--dry-run` mode** — log what *would* be sent without sending | Safe testing | |
+| # | Status | Feature | Why | Notes |
+|---|---|---|---|---|
+| P3.1 | ✅ | **Volume spike detection** — hourly volume > 2x average | Confirms breakout on hourly chart | |
+| P3.2 | 📋 | **Multiple alert channels** — email, Slack webhook | Flexibility beyond Telegram | |
+| P3.3 | 📋 | **Per-stock overrides** — different thresholds per ticker | BBCA may have different RSI bands than TLKM | |
+| P3.4 | ✅ | **`--dry-run` mode** — log what *would* be sent without sending | Safe testing | |
 
 ### 🗓️ Q4 — Won't Have (Yet)
 
-| # | Feature | Why not now |
-|---|---|---|
-| P4.1 | **GUI dashboard** | CLI + Telegram push covers the use case; UI is scope creep |
-| P4.2 | **Auto-trading / order execution** | User explicitly wants manual trade — auto-execution adds regulatory + financial risk |
-| P4.3 | **WebSocket real-time feed** | Hourly interval doesn't need sub-second data; yfinance REST is sufficient |
-| P4.4 | **Backtesting engine** | Would need a strategy DSL, slippage model, historical data store — massive scope |
+| # | Status | Feature | Why not now |
+|---|---|---|---|
+| P4.1 | 📋 | **GUI dashboard** | CLI + Telegram push covers the use case; UI is scope creep |
+| P4.2 | 📋 | **Auto-trading / order execution** | User explicitly wants manual trade — auto-execution adds regulatory + financial risk |
+| P4.3 | 📋 | **WebSocket real-time feed** | Hourly interval doesn't need sub-second data; yfinance REST is sufficient |
+| P4.4 | 📋 | **Backtesting engine** | Would need a strategy DSL, slippage model, historical data store — massive scope |
 | P4.5 | **Mobile app** | Telegram *is* the mobile experience |
 
 ### Key Design Decisions
@@ -371,13 +375,13 @@ P2.3 logging ───────────────── needs watcher l
 
 ### Sprint Plan
 
-| Sprint | Focus | Items |
-|---|---|---|
-| **Sprint 1** | Core Watcher | P1.1 → P1.2 → P1.3 → P1.4 → P1.5 → P1.6 |
-| **Sprint 2** | Hardening | P2.1, P2.2, P2.3, P2.4 |
-| **Sprint 3** | Alert Quality | P2.5, P3.1, P3.3 |
-| **Sprint 4+** | Multi-channel | P3.2, P3.4 |
+| Sprint | Focus | Items | Status |
+|---|---|---|---|
+| **Sprint 1** | Core Watcher | P1.1 → P1.2 → P1.3 → P1.4 → P1.5 → P1.6 | ✅ Done |
+| **Sprint 2** | Hardening | P2.1, P2.2, P2.3, P2.4 | ✅ Done (P2.4 📋) |
+| **Sprint 3** | Alert Quality | P2.5, P3.1, P3.3 | ✅ Done (P2.5, P3.3 📋) |
+| **Sprint 4+** | Multi-channel | P3.2, P3.4 | ✅ Done (P3.2 📋) |
 
 ---
 
-*Last updated: 2026-07-09*
+*Last updated: 2026-07-10*
