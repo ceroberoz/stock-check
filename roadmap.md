@@ -71,6 +71,7 @@ $ uv stock-check --check BBCA --day 1
 | 2.4 | **Multiple tickers** — `--check BBCA,BBRI,ASII` | Compare stocks in one run | Sprint 2 |
 | 2.5 | **Rich(r) formatting** — colours (green/red for up/down), table alignment, unicode box-drawing | Readability at a glance | Sprint 2 |
 | 2.6 | **Help flag** — `--help` with full docs for all flags | Basic UX courtesy | Sprint 2 |
+| 2.7 | **IDX30 list view** — `--list idx30` shows all IDX30 stocks in a compact table | Quick market overview without checking each ticker individually | Sprint 3 |
 
 ### Smart MA Period Strategy (Q2.1 detail)
 
@@ -85,6 +86,64 @@ The MA periods adapt dynamically to the candle interval so they map to roughly t
 | `1h` (hourly) | MA12, MA26, MA50 | ~half-day, ~week, ~2weeks |
 
 > **Rationale:** Fixed MA periods (5/9/20) on daily candles map to ~calendar periods (1w/2w/1m). When the candle interval changes, the MA periods shift so the *time horizon stays consistent*. If the user wants raw periods they can override with a `--ma 5,9,20,50` flag (Q3).
+
+### IDX30 List View (Q2.7 detail)
+
+A new `--list` flag that displays a compact table of all IDX30 stocks with key technical metrics.
+
+**Usage:**
+```bash
+uv stock-check --list idx30
+```
+
+**Output format (Rich table):**
+```
+╔══════════════════════════════════════════════════════════════════════╗
+║                    IDX30 Stock Overview                            ║
+╠══════════╦═══════════╦═══════════╦═══════════╦═══════════╦═════════╣
+║ Ticker   ║ Last Price║ Change    ║ RSI       ║ Signal    ║ Action  ║
+╠══════════╬═══════════╬═══════════╬═══════════╬═══════════╬═════════╣
+║ BBCA     ║  6,175    ║ -125(-2%) ║  54.41    ║ BUY       ║ ACCUM   ║
+║ BBRI     ║  4,850    ║  +50(+1%) ║  62.30    ║ BUY       ║ ACCUM   ║
+║ TLKM     ║  2,340    ║  -10(0%)  ║  45.20    ║ NEUTRAL   ║ WAIT    ║
+║ ...      ║ ...       ║ ...       ║ ...       ║ ...       ║ ...     ║
+╚══════════╩═══════════╩═══════════╩═══════════╩═══════════╩═════════╝
+```
+
+**Columns:**
+| Column | Source | Description |
+|--------|--------|-------------|
+| Ticker | Symbol without .JK | Stock symbol |
+| Last Price | `fetch_stock_data()["last_price"]` | Current close price |
+| Change | `fetch_stock_data()["change_pct"]` | Price change (%) |
+| RSI | `calculate_rsi()` | RSI(14) value |
+| Signal | `determine_signal()` | STRONG BUY/BUY/NEUTRAL/SELL/STRONG SELL |
+| Action | `_ACTIONS[signal]` | HOLD/ACCUM/WAIT/AVOID/EXIT |
+
+**Behavior:**
+- Fetches data for all IDX30 stocks sequentially (with progress indicator)
+- Skips stocks with no data (shows warning)
+- Sorts by signal priority: STRONG BUY → BUY → NEUTRAL → SELL → STRONG SELL
+- Uses Rich tables for alignment and colors (green/red for change)
+- Supports `--interval` flag for different timeframes
+- Respects `--day` flag for lookback period
+
+**Implementation plan:**
+1. Add `--list` argument to CLI parser in `cli.py`
+2. Create `format_list_table()` function in `formatter.py` using Rich tables
+3. Add IDX30 constant list to `config.py` (same as in config.yaml.example)
+4. Update `cli.py:main()` to handle `--list` mode
+5. Add progress bar using Rich for feedback during fetch
+
+**Acceptance criteria:**
+- [ ] `uv stock-check --list idx30` displays all 30 stocks
+- [ ] Table includes all 6 columns (Ticker, Last Price, Change, RSI, Signal, Action)
+- [ ] Colors applied: green for positive change, red for negative
+- [ ] Signal column colored by signal strength
+- [ ] Stocks sorted by signal priority (strongest first)
+- [ ] Progress indicator shows during fetch
+- [ ] Handles network errors gracefully (skips failed tickers)
+- [ ] Runs in < 30 seconds for all 30 stocks
 
 ---
 
@@ -189,6 +248,7 @@ stock-check = "stock_checker.cli:main"
 2.3 --interval flag ────────────── needs fetcher + MA
 2.4 Multiple tickers ───────────── needs CLI + fetcher
 2.5 Rich formatting ────────────── needs formatter (1.6)
+2.7 IDX30 list view ────────────── needs 2.4 + 2.5 + indicators
 ```
 
 ## Sprint Plan
@@ -197,7 +257,7 @@ stock-check = "stock_checker.cli:main"
 |---|---|---|
 | **Sprint 1** | Core (Must Have) | 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 |
 | **Sprint 2** | Hardening (Must Have + Should Have) | 2.1, 2.2, 2.6, 2.3 |
-| **Sprint 3** | Multi-ticker + formatting | 2.4, 2.5 |
+| **Sprint 3** | Multi-ticker + formatting + list view | 2.4, 2.5, 2.7 |
 | **Sprint 4+** | Q3 items | 3.1–3.8 (pick by popularity) |
 
 ---

@@ -227,3 +227,62 @@ def format_summary(
     lines.append("╚" + "═" * WIDTH + "╝")
 
     return "\n".join(_colorize(lines, data, signal, rsi=rsi, macd=macd))
+
+
+def format_list_table(results: list[dict]) -> str:
+    """Format a list of stock results as a Rich table string."""
+    from rich.table import Table
+    from rich.text import Text
+
+    table = Table(
+        title="IDX30 Stock Overview",
+        show_header=True,
+        header_style="bold cyan",
+        show_lines=False,
+    )
+
+    table.add_column("Ticker", style="bold", width=8)
+    table.add_column("Last Price", justify="right", width=12)
+    table.add_column("Change", justify="right", width=14)
+    table.add_column("RSI", justify="right", width=10)
+    table.add_column("Signal", width=14)
+    table.add_column("Action", width=10)
+
+    signal_styles = {
+        "STRONG BUY": "bold green",
+        "BUY": "green",
+        "NEUTRAL": "yellow",
+        "SELL": "red",
+        "STRONG SELL": "bold red",
+    }
+
+    for r in results:
+        change_color = "green" if r["change"] >= 0 else "red"
+        change_str = f"{r['change']:+,.0f} ({r['change_pct']:+.1f}%)"
+        change_text = Text(change_str, style=change_color)
+
+        rsi_val = f"{r['rsi']:.1f}" if r["rsi"] is not None else "—"
+
+        signal_label = r["signal"]
+        signal_style = signal_styles.get(signal_label, "")
+        signal_text = Text(signal_label, style=signal_style)
+
+        action_label = _ACTIONS.get(signal_label, "WATCH")
+        action_text = Text(action_label, style=signal_style)
+
+        table.add_row(
+            r["ticker"],
+            f"Rp {r['last_price']:,.0f}",
+            change_text,
+            rsi_val,
+            signal_text,
+            action_text,
+        )
+
+    from io import StringIO
+    from rich.console import Console
+
+    buf = StringIO()
+    console = Console(file=buf, width=80)
+    console.print(table)
+    return buf.getvalue()

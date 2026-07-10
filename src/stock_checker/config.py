@@ -8,6 +8,15 @@ from pathlib import Path
 
 import yaml
 
+# IDX30 constituent stocks (period May–Jul 2026)
+IDX30_STOCKS: list[str] = [
+    "AADI", "ADMR", "ADRO", "AMRT", "ANTM", "ASII",
+    "BBCA", "BBNI", "BBRI", "BMRI", "BRPT", "BUMI",
+    "CPIN", "EMTK", "GOTO", "ICBP", "INCO", "INDF",
+    "INKP", "JPFA", "KLBF", "MBMA", "MDKA", "MEDC",
+    "PGAS", "PGEO", "PTBA", "TLKM", "UNTR", "UNVR",
+]
+
 
 @dataclass
 class AlertConfig:
