@@ -10,7 +10,7 @@ build/
 .venv/
 
 # ── OpenCode session state ──
-.omo/run-continuation/
+.omo/
 
 # ── IDE / editors ──
 .vscode/
