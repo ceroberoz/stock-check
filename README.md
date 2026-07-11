@@ -193,7 +193,7 @@ uv run stock-check --check BBCA,BBRI,ASII --format csv
 
 ## DCA (Dollar Cost Averaging) Analysis
 
-Compare multiple stocks and find the best pick for monthly investing using technical analysis-based scoring.
+Compare multiple stocks and get **weighted allocation** recommendations using technical analysis-based scoring. Instead of picking one stock, the tool distributes your investment across all candidates based on their scores.
 
 ### Usage
 
@@ -202,7 +202,7 @@ Compare multiple stocks and find the best pick for monthly investing using techn
 uv run stock-check --check BBCA,BBRI,TLKM --dca --amount 1000000
 
 # US stocks
-uv run stock-check --check SCHG,SPY,QQQ --exchange US --dca --amount 10
+uv run stock-check --check SCHG,SPY,QQQ --exchange US --dca --amount 100
 ```
 
 ### Scoring Factors
@@ -214,22 +214,35 @@ uv run stock-check --check SCHG,SPY,QQQ --exchange US --dca --amount 10
 | **MACD** | 20 pts | Momentum direction and strength |
 | **MA Alignment** | 10 pts | Price vs moving average positioning |
 
+### Allocation Logic
+
+The tool calculates weighted allocation based on each stock's technical score:
+
+```
+Total Score = SPY (90) + VOO (90) + SCHG (75) = 255
+
+SPY  = (90/255) × $100 = $35.29
+VOO  = (90/255) × $100 = $35.29
+SCHG = (75/255) × $100 = $29.41
+```
+
 ### Example Output
 
 ```
-╔══════════════════════════════════════════════════════╗
-║              DCA Analysis — IDX Stocks                ║
-╠══════════════════════════════════════════════════════╣
-║  Monthly Investment: Rp 1,000,000                     ║
-║──────────────────────────────────────────────────────║
-║  Ticker  Price    Signal    RSI   MACD   Score  Rank  ║
-║──────────────────────────────────────────────────────║
-║  BBCA    Rp 6,175 BUY       54.4  +34.4  84/100  1    ║
-║  PGEO    Rp 1,005 STRONG BUY 68.2  +15.9  78/100  2    ║
-║  ELSA    Rp 655   STRONG BUY 68.2  +14.1  78/100  3    ║
-║──────────────────────────────────────────────────────║
-║  Recommendation: BBCA                                  ║
-╚══════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════════════════╗
+║                              DCA Analysis                                ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  Monthly Investment: $ 100.00                                            ║
+║──────────────────────────────────────────────────────────────────────────║
+║  Ticker    Price      Signal        RSI   MACD  Score     Alloc  Shares  ║
+║  SPY      $754.95    STRONG BUY    59.7   +1.0     90   $35.32  0.0468  ║
+║  VOO      $693.86    STRONG BUY    60.0   +0.9     90   $35.32  0.0509  ║
+║  SCHG      $34.65    STRONG BUY    60.4   +0.1     75   $29.37  0.8475  ║
+║──────────────────────────────────────────────────────────────────────────║
+║  Recommended Allocation:                                                 ║
+║  - Top pick: SPY ($35.32)                                                ║
+║  - Best signal: STRONG BUY | RSI: 59.72 | Score: 90/100                 ║
+╚══════════════════════════════════════════════════════════════════════════╝
 ```
 
 ## Telegram Alerts (Watch Mode)

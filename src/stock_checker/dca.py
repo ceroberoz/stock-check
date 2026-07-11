@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 
-def calculate_dca_ranking(results: list[dict]) -> list[dict]:
-    """Rank stocks for DCA based on technical analysis.
+def calculate_dca_ranking(results: list[dict], amount: float = 0) -> list[dict]:
+    """Rank stocks for DCA based on technical analysis and compute allocation.
 
     Scoring factors:
     - Signal strength (40 points max)
@@ -16,10 +16,12 @@ def calculate_dca_ranking(results: list[dict]) -> list[dict]:
     ----------
     results :
         List of stock data dicts with keys: ticker, last_price, signal, rsi, macd, mas.
+    amount :
+        Monthly investment amount for allocation calculation.
 
     Returns
     -------
-        Sorted list with added 'score' and 'rank' fields.
+        Sorted list with added 'score', 'rank', and 'allocation' fields.
     """
     scored = []
 
@@ -52,6 +54,23 @@ def calculate_dca_ranking(results: list[dict]) -> list[dict]:
 
     for i, r in enumerate(scored, 1):
         r["rank"] = i
+
+    # Calculate allocation based on weighted scores
+    if amount > 0 and len(scored) > 0:
+        total_score = sum(r["score"] for r in scored)
+        if total_score > 0:
+            for r in scored:
+                allocation = (r["score"] / total_score) * amount
+                r["allocation"] = round(allocation, 2)
+                price = r.get("last_price", 0)
+                if price > 0:
+                    r["shares"] = round(allocation / price, 4)
+                else:
+                    r["shares"] = 0
+        else:
+            for r in scored:
+                r["allocation"] = 0
+                r["shares"] = 0
 
     return scored
 
@@ -105,11 +124,7 @@ def _score_ma_alignment(price: float, mas: dict[str, float]) -> float:
 
 def format_dca_output(ranked: list[dict], amount: float, currency_symbol: str) -> str:
     """Format DCA analysis output as a rich box table."""
-    from rich.console import Console
-    from rich.table import Table
-    from rich.text import Text
-
-    WIDTH = 60
+    WIDTH = 76
 
     lines = []
     lines.append("╔" + "═" * WIDTH + "╗")
@@ -118,29 +133,11 @@ def format_dca_output(ranked: list[dict], amount: float, currency_symbol: str) -
     lines.append(f"║  Monthly Investment: {currency_symbol} {amount:,.2f}{'':<{WIDTH - 28}}║")
     lines.append("║" + "─" * WIDTH + "║")
 
-    table = Table(
-        show_header=True, header_style="bold cyan", show_lines=False, box=None, padding=(0, 1)
-    )
-    table.add_column("Ticker", style="bold", width=8)
-    table.add_column("Price", justify="right", width=12)
-    table.add_column("Signal", width=12)
-    table.add_column("RSI", justify="right", width=8)
-    table.add_column("MACD", justify="right", width=10)
-    table.add_column("Score", justify="right", width=8)
-    table.add_column("Rank", justify="right", width=6)
-
-    signal_styles = {
-        "STRONG BUY": "bold green",
-        "BUY": "green",
-        "NEUTRAL": "yellow",
-        "SELL": "red",
-        "STRONG SELL": "bold red",
-    }
+    header = f"  {'Ticker':<8} {'Price':>10}  {'Signal':<12} {'RSI':>5} {'MACD':>7} {'Score':>6} {'Alloc':>10} {'Shares':>8}"
+    lines.append(f"║{header:<{WIDTH}}║")
 
     for r in ranked:
         signal_label = r["signal"][0]
-        signal_style = signal_styles.get(signal_label, "")
-        signal_text = Text(signal_label, style=signal_style)
 
         rsi_val = f"{r['rsi']:.1f}" if r.get("rsi") is not None else "—"
 
@@ -148,51 +145,26 @@ def format_dca_output(ranked: list[dict], amount: float, currency_symbol: str) -
         if macd is not None:
             hist = macd["histogram"]
             macd_str = f"{hist:+.1f}"
-            macd_style = "green" if hist >= 0 else "red"
-            macd_text = Text(macd_str, style=macd_style)
         else:
-            macd_text = Text("—")
+            macd_str = "—"
 
-        score_text = Text(f"{r['score']:.0f}", style="bold")
-        rank_text = Text(f"#{r['rank']}", style="bold" if r["rank"] == 1 else "")
+        alloc = r.get("allocation", 0)
+        shares = r.get("shares", 0)
 
-        table.add_row(
-            r["ticker"],
-            f"{currency_symbol} {r['last_price']:,.2f}",
-            signal_text,
-            rsi_val,
-            macd_text,
-            score_text,
-            rank_text,
-        )
-
-    from io import StringIO
-
-    buf = StringIO()
-    console = Console(file=buf, width=WIDTH + 4)
-    console.print(table)
-    table_str = buf.getvalue()
-
-    for line in table_str.rstrip().split("\n"):
-        lines.append(f"║  {line:<{WIDTH - 4}}  ║")
+        row = f"  {r['ticker']:<8} {currency_symbol}{r['last_price']:>8,.2f}  {signal_label:<12} {rsi_val:>5} {macd_str:>7} {r['score']:>6.0f} {currency_symbol}{alloc:>8,.2f} {shares:>8.4f}"
+        lines.append(f"║{row:<{WIDTH}}║")
 
     lines.append("║" + "─" * WIDTH + "║")
 
     winner = ranked[0]
     rec = (
-        f"  Recommendation: {winner['ticker']}\n"
-        f"  - Best signal: {winner['signal'][0]}\n"
-        f"  - RSI: {winner.get('rsi', 'N/A')}\n"
-        f"  - Score: {winner['score']:.0f}/100"
+        f"  Recommended Allocation:\n"
+        f"  - Top pick: {winner['ticker']} ({currency_symbol} {winner.get('allocation', 0):,.2f})\n"
+        f"  - Best signal: {winner['signal'][0]} | RSI: {winner.get('rsi', 'N/A')} | Score: {winner['score']:.0f}/100"
     )
     for line in rec.split("\n"):
         lines.append(f"║  {line:<{WIDTH - 4}}  ║")
 
     lines.append("╚" + "═" * WIDTH + "╝")
 
-    from io import StringIO as SIO
-
-    buf2 = SIO()
-    c = Console(file=buf2, width=WIDTH + 4)
-    c.print("\n".join(lines))
-    return buf2.getvalue()
+    return "\n".join(lines) + "\n"
