@@ -280,8 +280,8 @@ def _handle_dca_mode(args: argparse.Namespace) -> None:
         console.print("[red]No data retrieved.[/red]")
         return
 
-    ranked = calculate_dca_ranking(results, args.amount)
-    console.print(format_dca_output(ranked, args.amount, currency_symbol))
+    ranked = calculate_dca_ranking(results, args.amount, exchange)
+    console.print(format_dca_output(ranked, args.amount, currency_symbol, exchange))
 
 
 if __name__ == "__main__":

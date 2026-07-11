@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 
-def calculate_dca_ranking(results: list[dict], amount: float = 0) -> list[dict]:
+def calculate_dca_ranking(results: list[dict], amount: float = 0, exchange: str = "IDX") -> list[dict]:
     """Rank stocks for DCA based on technical analysis and compute allocation.
 
     Scoring factors:
@@ -18,6 +18,8 @@ def calculate_dca_ranking(results: list[dict], amount: float = 0) -> list[dict]:
         List of stock data dicts with keys: ticker, last_price, signal, rsi, macd, mas.
     amount :
         Monthly investment amount for allocation calculation.
+    exchange :
+        Exchange code (IDX or US). IDX uses lots of 100 shares, US allows fractional.
 
     Returns
     -------
@@ -55,7 +57,6 @@ def calculate_dca_ranking(results: list[dict], amount: float = 0) -> list[dict]:
     for i, r in enumerate(scored, 1):
         r["rank"] = i
 
-    # Calculate allocation based on weighted scores
     if amount > 0 and len(scored) > 0:
         total_score = sum(r["score"] for r in scored)
         if total_score > 0:
@@ -63,14 +64,24 @@ def calculate_dca_ranking(results: list[dict], amount: float = 0) -> list[dict]:
                 allocation = (r["score"] / total_score) * amount
                 r["allocation"] = round(allocation, 2)
                 price = r.get("last_price", 0)
-                if price > 0:
-                    r["shares"] = round(allocation / price, 4)
+
+                if exchange == "IDX":
+                    lot_price = price * 100
+                    if lot_price > 0:
+                        r["lots"] = int(allocation // lot_price)
+                        r["shares"] = r["lots"] * 100
+                        r["actual_cost"] = r["shares"] * price
+                    else:
+                        r["lots"] = 0
+                        r["shares"] = 0
+                        r["actual_cost"] = 0
                 else:
-                    r["shares"] = 0
-        else:
-            for r in scored:
-                r["allocation"] = 0
-                r["shares"] = 0
+                    if price > 0:
+                        r["shares"] = round(allocation / price, 4)
+                        r["actual_cost"] = r["shares"] * price
+                    else:
+                        r["shares"] = 0
+                        r["actual_cost"] = 0
 
     return scored
 
@@ -122,7 +133,7 @@ def _score_ma_alignment(price: float, mas: dict[str, float]) -> float:
     return (above / total) * 10
 
 
-def format_dca_output(ranked: list[dict], amount: float, currency_symbol: str) -> str:
+def format_dca_output(ranked: list[dict], amount: float, currency_symbol: str, exchange: str = "IDX") -> str:
     """Format DCA analysis output as a rich box table."""
     WIDTH = 76
 
@@ -133,7 +144,10 @@ def format_dca_output(ranked: list[dict], amount: float, currency_symbol: str) -
     lines.append(f"║  Monthly Investment: {currency_symbol} {amount:,.2f}{'':<{WIDTH - 28}}║")
     lines.append("║" + "─" * WIDTH + "║")
 
-    header = f"  {'Ticker':<8} {'Price':>10}  {'Signal':<12} {'RSI':>5} {'MACD':>7} {'Score':>6} {'Alloc':>10} {'Shares':>8}"
+    if exchange == "IDX":
+        header = f"  {'Ticker':<8} {'Price':>10}  {'Signal':<12} {'RSI':>5} {'MACD':>7} {'Score':>6} {'Alloc':>12} {'Lots':>6}"
+    else:
+        header = f"  {'Ticker':<8} {'Price':>10}  {'Signal':<12} {'RSI':>5} {'MACD':>7} {'Score':>6} {'Alloc':>10} {'Shares':>8}"
     lines.append(f"║{header:<{WIDTH}}║")
 
     for r in ranked:
@@ -149,20 +163,35 @@ def format_dca_output(ranked: list[dict], amount: float, currency_symbol: str) -
             macd_str = "—"
 
         alloc = r.get("allocation", 0)
-        shares = r.get("shares", 0)
 
-        row = f"  {r['ticker']:<8} {currency_symbol}{r['last_price']:>8,.2f}  {signal_label:<12} {rsi_val:>5} {macd_str:>7} {r['score']:>6.0f} {currency_symbol}{alloc:>8,.2f} {shares:>8.4f}"
+        if exchange == "IDX":
+            lots = r.get("lots", 0)
+            alloc_text = f"{currency_symbol}{alloc:>10,.0f}"
+            shares_text = f"{lots}"
+            row = f"  {r['ticker']:<8} {currency_symbol}{r['last_price']:>8,.2f}  {signal_label:<12} {rsi_val:>5} {macd_str:>7} {r['score']:>6.0f} {alloc_text} {shares_text:>6}"
+        else:
+            shares = r.get("shares", 0)
+            row = f"  {r['ticker']:<8} {currency_symbol}{r['last_price']:>8,.2f}  {signal_label:<12} {rsi_val:>5} {macd_str:>7} {r['score']:>6.0f} {currency_symbol}{alloc:>8,.2f} {shares:>8.4f}"
+
         lines.append(f"║{row:<{WIDTH}}║")
 
     lines.append("║" + "─" * WIDTH + "║")
 
     winner = ranked[0]
-    rec = (
-        f"  Recommended Allocation:\n"
-        f"  - Top pick: {winner['ticker']} ({currency_symbol} {winner.get('allocation', 0):,.2f})\n"
-        f"  - Best signal: {winner['signal'][0]} | RSI: {winner.get('rsi', 'N/A')} | Score: {winner['score']:.0f}/100"
-    )
-    for line in rec.split("\n"):
+    rec_lines = []
+    rec_lines.append("  Recommended Allocation:")
+    rec_lines.append(f"  - Top pick: {winner['ticker']} ({currency_symbol} {winner.get('actual_cost', 0):,.0f})")
+    rec_lines.append(f"  - Best signal: {winner['signal'][0]} | RSI: {winner.get('rsi', 'N/A')} | Score: {winner['score']:.0f}/100")
+
+    if exchange == "IDX":
+        total_lots = sum(r.get("lots", 0) for r in ranked)
+        total_cost = sum(r.get("actual_cost", 0) for r in ranked)
+        remaining = amount - total_cost
+        rec_lines.append(f"  - Total: {total_lots} lots | Cost: {currency_symbol} {total_cost:,.0f} | Remaining: {currency_symbol} {remaining:,.0f}")
+    else:
+        rec_lines.append("  - Allocation based on weighted technical scores")
+
+    for line in rec_lines:
         lines.append(f"║  {line:<{WIDTH - 4}}  ║")
 
     lines.append("╚" + "═" * WIDTH + "╝")
