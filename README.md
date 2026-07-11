@@ -9,6 +9,8 @@ CLI tool to check Indonesian stock prices from Bursa Efek Indonesia (IDX) via Ya
 - Technical indicators: Moving Averages, RSI(14), MACD(12/26/9)
 - Auto `.JK` suffix for Indonesian stocks
 - Rich terminal output with colors
+- JSON and CSV output for scripting (`--format json|csv`)
+- Custom MA periods (`--ma 5,20,50,200`)
 - Telegram alert bot (watch mode)
 - File-based caching for repeated queries
 
@@ -107,6 +109,68 @@ uv run stock-check --check BBCA --interval 1h
 uv run stock-check --check BBCA --day 5
 ```
 
+### Custom MA Periods
+
+Override the default moving average periods with `--ma`:
+
+```bash
+# Use custom periods (comma-separated)
+uv run stock-check --check BBCA --ma 5,20,50,200
+
+# Combine with interval
+uv run stock-check --check BBCA --interval 1wk --ma 4,12,24
+```
+
+The `--ma` flag overrides the interval-based MA selection, letting you use any periods you want.
+
+### Output Formats
+
+Switch between text, JSON, and CSV output:
+
+```bash
+# Default rich terminal output
+uv run stock-check --check BBCA
+
+# JSON output (for scripting/piping)
+uv run stock-check --check BBCA --format json
+
+# CSV output (for spreadsheets)
+uv run stock-check --check BBCA --format csv
+
+# Multiple stocks in CSV
+uv run stock-check --check BBCA,BBRI,ASII --format csv
+```
+
+**JSON output example:**
+```json
+{
+  "ticker": "BBCA.JK",
+  "exchange": "Jakarta Stock Exchange",
+  "date": "2026-07-11",
+  "price": {
+    "last": 6175.0,
+    "change": -125.0,
+    "change_pct": -1.98
+  },
+  "moving_averages": {
+    "MA5": 6195.0,
+    "MA9": 5997.22,
+    "MA20": 6061.25,
+    "MA50": 5935.5
+  },
+  "signal": {
+    "label": "BUY",
+    "description": "price above most MAs"
+  },
+  "rsi": 54.41,
+  "macd": {
+    "macd": 64.53,
+    "signal": 30.1,
+    "histogram": 34.42
+  }
+}
+```
+
 ## Telegram Alerts (Watch Mode)
 
 Set up a Telegram bot to receive alerts when technical signals change.
@@ -183,6 +247,8 @@ MA periods adapt to candle interval for consistent time horizons:
 | 1d (daily) | MA5, MA9, MA20, MA50 | 1w, 2w, 1m, 2.5m |
 | 1wk (weekly) | MA4, MA12, MA24 | 1m, 1q, 6m |
 | 1mo (monthly) | MA3, MA6, MA12 | 1q, 6m, 1y |
+
+**Override:** Use `--ma 5,20,50,200` to specify custom periods instead of the defaults.
 
 ### RSI (Relative Strength Index)
 

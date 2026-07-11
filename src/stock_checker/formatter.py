@@ -69,9 +69,7 @@ def _section_header(text: str) -> str:
     return f"║  {text:<{WIDTH - 4}}  ║"
 
 
-def _colorize(
-    lines: list[str], data: dict, signal: tuple[str, str], **kwargs: object
-) -> list[str]:
+def _colorize(lines: list[str], data: dict, signal: tuple[str, str], **kwargs: object) -> list[str]:
     """Apply rich markup to rendered lines for terminal color.
 
     Colors are applied *after* alignment so padding stays correct — rich
@@ -81,8 +79,6 @@ def _colorize(
     change_color = "green" if change >= 0 else "red"
     signal_label = signal[0]
     action_label = _ACTIONS.get(signal_label, "")
-    rsi = kwargs.get("rsi")
-    macd = kwargs.get("macd")
 
     colored: list[str] = []
     for line in lines:
@@ -94,9 +90,7 @@ def _colorize(
                 line = line[: m.start()] + wrapped + line[m.end() :]
 
         # RSI status color
-        elif "RSI" in line and (
-            "overbought" in line or "oversold" in line or "neutral" in line
-        ):
+        elif "RSI" in line and ("overbought" in line or "oversold" in line or "neutral" in line):
             if "overbought" in line:
                 line = line.replace("overbought", "[red]overbought[/red]")
             elif "oversold" in line:
@@ -121,13 +115,9 @@ def _colorize(
             sig_color = _SIGNAL_COLORS.get(signal_label, "")
             if sig_color:
                 if signal_label in line:
-                    line = line.replace(
-                        signal_label, f"[{sig_color}]{signal_label}[/{sig_color}]"
-                    )
+                    line = line.replace(signal_label, f"[{sig_color}]{signal_label}[/{sig_color}]")
                 if action_label in line:
-                    line = line.replace(
-                        action_label, f"[{sig_color}]{action_label}[/{sig_color}]"
-                    )
+                    line = line.replace(action_label, f"[{sig_color}]{action_label}[/{sig_color}]")
 
         colored.append(line)
     return colored
@@ -204,10 +194,7 @@ def format_summary(
         hist_val = macd["histogram"]
         macd_arrow = "▲" if hist_val >= 0 else "▼"
         macd_trend = "bullish" if hist_val >= 0 else "bearish"
-        macd_line = macd["macd"]
-        macd_text = (
-            f"  MACD(12/26/9) : {hist_val:>+8,.0f}  {macd_arrow}  {macd_trend}"
-        )
+        macd_text = f"  MACD(12/26/9) : {hist_val:>+8,.0f}  {macd_arrow}  {macd_trend}"
         lines.append(f"║  {macd_text:<{WIDTH - 4}}  ║")
 
     lines.append(_sep("─"))
@@ -286,3 +273,89 @@ def format_list_table(results: list[dict]) -> str:
     console = Console(file=buf, width=80)
     console.print(table)
     return buf.getvalue()
+
+
+def format_json(
+    data: dict,
+    mas: dict[str, float],
+    signal: tuple[str, str],
+    interval: str = "1d",
+    rsi: float | None = None,
+    macd: dict[str, float] | None = None,
+) -> str:
+    """Format stock data as JSON."""
+    import json
+    from datetime import date
+
+    output = {
+        "ticker": data["ticker"],
+        "exchange": "Jakarta Stock Exchange",
+        "date": date.today().isoformat(),
+        "period": data["period"],
+        "interval": interval,
+        "price": {
+            "last": data["last_price"],
+            "change": data["change"],
+            "change_pct": data["change_pct"],
+            "open": data["open"],
+            "high": data["high"],
+            "low": data["low"],
+            "close": data["close"],
+        },
+        "moving_averages": mas,
+        "signal": {
+            "label": signal[0],
+            "description": signal[1],
+        },
+    }
+
+    if rsi is not None:
+        output["rsi"] = rsi
+
+    if macd is not None:
+        output["macd"] = macd
+
+    return json.dumps(output, indent=2)
+
+
+def format_csv(
+    data: dict,
+    mas: dict[str, float],
+    signal: tuple[str, str],
+    interval: str = "1d",
+    rsi: float | None = None,
+    macd: dict[str, float] | None = None,
+) -> str:
+    """Format stock data as CSV."""
+    from datetime import date
+
+    lines = []
+
+    lines.append(
+        "ticker,exchange,date,period,interval,last_price,change,change_pct,open,high,low,close,signal,signal_description,rsi,macd_histogram"
+    )
+
+    rsi_val = f"{rsi}" if rsi is not None else ""
+    macd_hist = f"{macd['histogram']}" if macd is not None else ""
+
+    line = (
+        f"{data['ticker']},"
+        f"Jakarta Stock Exchange,"
+        f"{date.today().isoformat()},"
+        f"{data['period']},"
+        f"{interval},"
+        f"{data['last_price']},"
+        f"{data['change']},"
+        f"{data['change_pct']},"
+        f"{data['open']},"
+        f"{data['high']},"
+        f"{data['low']},"
+        f"{data['close']},"
+        f"{signal[0]},"
+        f"{signal[1]},"
+        f"{rsi_val},"
+        f"{macd_hist}"
+    )
+    lines.append(line)
+
+    return "\n".join(lines)

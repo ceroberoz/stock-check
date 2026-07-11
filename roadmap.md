@@ -158,9 +158,9 @@ uv stock-check --list idx30
 | 3.1 | ✅ | **RSI (Relative Strength Index)** and **MACD** indicators | RSI is the single highest-signal companion to MA for retail traders | Needs `ta-lib` or manual calc |
 | 3.2 | ✅ | **Volume analysis** — average volume, volume spike detection | Confirms price moves | |
 | 3.3 | 📋 | **`--start / --end`** date range instead of `--day` | Power users want arbitrary range | |
-| 3.4 | 📋 | **JSON / CSV output** via `--format json|csv` | Pipe-able to other tools | |
+| 3.4 | ✅ | **JSON / CSV output** via `--format json|csv` | Pipe-able to other tools | Sprint 4 |
 | 3.5 | ✅ | **Caching** — cache yfinance responses for N minutes (`--cache-ttl 300`) | Speed up repeated runs on same ticker | |
-| 3.6 | 📋 | **`--ma` override** — user-specified MA periods (`--ma 5,9,20,50`) | Power users may want custom periods | |
+| 3.6 | ✅ | **`--ma` override** — user-specified MA periods (`--ma 5,9,20,50`) | Power users may want custom periods | Sprint 4 |
 | 3.7 | 📋 | **Support for other exchanges** — set globally (`--exchange .JK`) or per-ticker | Makes the tool generic beyond IDX | |
 | 3.8 | 📋 | **Tabulate output** — alignment, pipe/column separation | Readable multi-ticker output | |
 

@@ -2,13 +2,12 @@
 
 import argparse
 import logging
-import sys
 
 from rich import print as rprint
 
 from stock_checker.config import IDX30_STOCKS
 from stock_checker.fetcher import fetch_stock_data
-from stock_checker.formatter import format_list_table, format_summary
+from stock_checker.formatter import format_csv, format_json, format_list_table, format_summary
 from stock_checker.indicators import calculate_macd, calculate_mas, calculate_rsi, determine_signal
 
 logger = logging.getLogger(__name__)
@@ -42,6 +41,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Candle interval: 1d (daily), 1wk (weekly), "
         "1mo (monthly), 5d (5-day), 1h (hourly) (default: 1d). "
         "MA periods adjust automatically to map to consistent time spans.",
+    )
+    parser.add_argument(
+        "--ma",
+        help="Comma-separated MA periods to override defaults "
+        "(e.g. --ma 5,20,50,200). Overrides interval-based MA selection.",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["text", "json", "csv"],
+        default="text",
+        help="Output format: text (default), json, or csv.",
     )
     return parser
 
@@ -84,14 +94,16 @@ def _handle_list_mode(args: argparse.Namespace) -> None:
                 signal = determine_signal(data["last_price"], mas)
                 rsi = calculate_rsi(hist)
 
-                results.append({
-                    "ticker": data["ticker"].replace(".JK", ""),
-                    "last_price": data["last_price"],
-                    "change": data["change"],
-                    "change_pct": data["change_pct"],
-                    "rsi": rsi,
-                    "signal": signal[0],
-                })
+                results.append(
+                    {
+                        "ticker": data["ticker"].replace(".JK", ""),
+                        "last_price": data["last_price"],
+                        "change": data["change"],
+                        "change_pct": data["change_pct"],
+                        "rsi": rsi,
+                        "signal": signal[0],
+                    }
+                )
             except (ValueError, ConnectionError) as e:
                 console.print(f"[yellow]Warning: {symbol} — {e}[/yellow]")
             except Exception as e:
@@ -110,22 +122,33 @@ def _handle_check_mode(args: argparse.Namespace) -> None:
     """Handle --check mode: fetch and display individual stock summaries."""
     symbols = [s.strip() for s in args.check.split(",")]
 
+    custom_periods = None
+    if args.ma:
+        try:
+            custom_periods = [int(p.strip()) for p in args.ma.split(",")]
+        except ValueError:
+            rprint("Error: --ma values must be comma-separated integers (e.g. --ma 5,20,50)")
+            return
+
     for symbol in symbols:
         try:
             data = fetch_stock_data(symbol, days=args.day, interval=args.interval)
-            hist = data.pop("_hist")  # consume, not printed
+            hist = data.pop("_hist")
 
-            mas = calculate_mas(hist, interval=args.interval)
+            mas = calculate_mas(hist, interval=args.interval, custom_periods=custom_periods)
             signal = determine_signal(data["last_price"], mas)
             rsi = calculate_rsi(hist)
             macd = calculate_macd(hist)
 
-            rprint(
-                format_summary(
-                    data, mas, signal, interval=args.interval, rsi=rsi, macd=macd
+            if args.format == "json":
+                print(format_json(data, mas, signal, interval=args.interval, rsi=rsi, macd=macd))
+            elif args.format == "csv":
+                print(format_csv(data, mas, signal, interval=args.interval, rsi=rsi, macd=macd))
+            else:
+                rprint(
+                    format_summary(data, mas, signal, interval=args.interval, rsi=rsi, macd=macd)
                 )
-            )
-            rprint()
+                rprint()
         except ValueError as e:
             rprint(f"Error: {e}\n")
         except ConnectionError as e:

@@ -36,7 +36,7 @@ def _get_period_labels(interval: str) -> dict[str, str]:
 
 
 def calculate_mas(
-    hist: pd.DataFrame, interval: str = "1d"
+    hist: pd.DataFrame, interval: str = "1d", custom_periods: list[int] | None = None
 ) -> dict[str, float]:
     """Calculate rolling moving averages from OHLCV *hist*.
 
@@ -46,6 +46,9 @@ def calculate_mas(
         OHLCV DataFrame from yfinance.
     interval :
         Candle interval used to select the appropriate MA windows.
+    custom_periods :
+        Optional list of custom MA periods (e.g. [5, 20, 50, 200]).
+        Overrides interval-based MA selection when provided.
 
     Returns
     -------
@@ -53,17 +56,24 @@ def calculate_mas(
         windows that have enough data.
     """
     close = hist["Close"]
-    ma_defs = _get_ma_defs(interval)
-    mas: dict[str, float] = {}
-    for label, window in ma_defs.items():
-        if len(close) >= window:
-            mas[label] = round(close.rolling(window=window).mean().iloc[-1], 2)
-    return mas
+
+    if custom_periods:
+        mas: dict[str, float] = {}
+        for period in custom_periods:
+            label = f"MA{period}"
+            if len(close) >= period:
+                mas[label] = round(close.rolling(window=period).mean().iloc[-1], 2)
+        return mas
+    else:
+        ma_defs = _get_ma_defs(interval)
+        mas: dict[str, float] = {}
+        for label, window in ma_defs.items():
+            if len(close) >= window:
+                mas[label] = round(close.rolling(window=window).mean().iloc[-1], 2)
+        return mas
 
 
-def calculate_rsi(
-    hist: pd.DataFrame, period: int = 14
-) -> float | None:
+def calculate_rsi(hist: pd.DataFrame, period: int = 14) -> float | None:
     """Calculate Relative Strength Index using Wilder's smoothing.
 
     Returns ``None`` when there are fewer than ``period + 1`` candles.
@@ -123,9 +133,7 @@ def calculate_macd(
     }
 
 
-def determine_signal(
-    last_price: float, mas: dict[str, float]
-) -> tuple[str, str]:
+def determine_signal(last_price: float, mas: dict[str, float]) -> tuple[str, str]:
     """Determine a trend signal based on price position vs moving averages.
 
     Returns ``(label, description)``, e.g. ``("STRONG BUY", "price above all MAs")``.
