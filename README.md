@@ -1,16 +1,18 @@
 # IDX Stock Checker
 
-CLI tool to check Indonesian stock prices from Bursa Efek Indonesia (IDX) via Yahoo Finance. Includes technical indicators (MA, RSI, MACD), trend signals, and optional Telegram alerts.
+CLI tool to check stock prices from various exchanges (IDX, US) via Yahoo Finance. Includes technical indicators (MA, RSI, MACD), trend signals, DCA analysis, and optional Telegram alerts.
 
 ## Features
 
 - Check individual stocks with `--check BBCA`
+- **Multi-exchange support** — IDX (Indonesia) and US markets
 - View all IDX30 stocks with `--list idx30`
 - Technical indicators: Moving Averages, RSI(14), MACD(12/26/9)
 - Auto `.JK` suffix for Indonesian stocks
 - Rich terminal output with colors
 - JSON and CSV output for scripting (`--format json|csv`)
 - Custom MA periods (`--ma 5,20,50,200`)
+- **DCA (Dollar Cost Averaging) analysis** with technical ranking (`--dca`)
 - Telegram alert bot (watch mode)
 - File-based caching for repeated queries
 
@@ -32,11 +34,29 @@ uv run stock-check --check BBCA
 
 ## Usage
 
-### Check a Stock
+### Check a Stock (IDX - Default Exchange)
 
 ```bash
 uv run stock-check --check BBCA
 ```
+
+### Check US Stocks
+
+For US stocks, use `--exchange US`:
+
+```bash
+uv run stock-check --check SCHG --exchange US
+uv run stock-check --check SPY,QQQ --exchange US
+```
+
+**Note:** `--exchange` is required for non-IDX stocks. IDX is the default and doesn't need the flag.
+
+### Available Exchanges
+
+| Exchange | Suffix | Currency | Flag | Example |
+|----------|--------|----------|------|---------|
+| **IDX** (Jakarta) | `.JK` | Rp (IDR) | *(default)* | `--check BBCA` |
+| **US Market** | *(none)* | $ (USD) | `--exchange US` | `--check SCHG --exchange US` |
 
 Output:
 
@@ -169,6 +189,47 @@ uv run stock-check --check BBCA,BBRI,ASII --format csv
     "histogram": 34.42
   }
 }
+```
+
+## DCA (Dollar Cost Averaging) Analysis
+
+Compare multiple stocks and find the best pick for monthly investing using technical analysis-based scoring.
+
+### Usage
+
+```bash
+# IDX stocks (default)
+uv run stock-check --check BBCA,BBRI,TLKM --dca --amount 1000000
+
+# US stocks
+uv run stock-check --check SCHG,SPY,QQQ --exchange US --dca --amount 10
+```
+
+### Scoring Factors
+
+| Factor | Weight | What It Measures |
+|--------|--------|------------------|
+| **Signal** | 40 pts | BUY/SELL recommendation strength |
+| **RSI** | 30 pts | Room to grow (40-60 ideal) vs overbought (>70) |
+| **MACD** | 20 pts | Momentum direction and strength |
+| **MA Alignment** | 10 pts | Price vs moving average positioning |
+
+### Example Output
+
+```
+╔══════════════════════════════════════════════════════╗
+║              DCA Analysis — IDX Stocks                ║
+╠══════════════════════════════════════════════════════╣
+║  Monthly Investment: Rp 1,000,000                     ║
+║──────────────────────────────────────────────────────║
+║  Ticker  Price    Signal    RSI   MACD   Score  Rank  ║
+║──────────────────────────────────────────────────────║
+║  BBCA    Rp 6,175 BUY       54.4  +34.4  84/100  1    ║
+║  PGEO    Rp 1,005 STRONG BUY 68.2  +15.9  78/100  2    ║
+║  ELSA    Rp 655   STRONG BUY 68.2  +14.1  78/100  3    ║
+║──────────────────────────────────────────────────────║
+║  Recommendation: BBCA                                  ║
+╚══════════════════════════════════════════════════════╝
 ```
 
 ## Telegram Alerts (Watch Mode)

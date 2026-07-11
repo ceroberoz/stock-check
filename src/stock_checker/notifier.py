@@ -29,10 +29,12 @@ def _build_message(alert: Alert) -> str:
         parts.append(alert.title)
     if alert.message:
         parts.append(alert.message)
-    parts.extend([
-        _SEPARATOR,
-        f"Action: {alert.action} \u2014 confirm on 1h chart",
-    ])
+    parts.extend(
+        [
+            _SEPARATOR,
+            f"Action: {alert.action} \u2014 confirm on 1h chart",
+        ]
+    )
     return "\n".join(parts)
 
 
@@ -68,9 +70,7 @@ def send_telegram(bot_token: str, chat_id: str, alert: Alert) -> bool:
         with urllib.request.urlopen(req, timeout=10) as resp:
             if resp.status != 200:
                 body = resp.read().decode("utf-8", errors="replace")
-                logger.warning(
-                    "Telegram API returned HTTP %d: %s", resp.status, body
-                )
+                logger.warning("Telegram API returned HTTP %d: %s", resp.status, body)
                 return False
             return True
     except urllib.error.URLError as e:

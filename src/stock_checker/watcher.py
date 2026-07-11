@@ -6,7 +6,6 @@ import argparse
 import json
 import logging
 import logging.handlers
-import os
 import signal
 import sys
 import time
@@ -40,9 +39,7 @@ def _setup_logging() -> None:
     root = logging.getLogger()
     root.setLevel(logging.INFO)
 
-    fmt = logging.Formatter(
-        "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-    )
+    fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 
     # Rotating file handler: 5 MB per file, 3 backups
     fh = logging.handlers.RotatingFileHandler(
@@ -186,9 +183,7 @@ def _send_with_dedup(alert: Alert, state: dict, config: AppConfig) -> bool:
         except (ValueError, TypeError):
             pass  # Corrupt timestamp — send anyway
 
-    ok = send_telegram(
-        config.telegram.bot_token, config.telegram.chat_id, alert
-    )
+    ok = send_telegram(config.telegram.bot_token, config.telegram.chat_id, alert)
     if ok:
         sent_alerts[dedup_key] = now.isoformat()
     return ok

@@ -54,9 +54,7 @@ def _signal_changed(prev: dict[str, Any], curr: dict[str, Any]) -> Alert | None:
 
     price = curr.get("price", "?")
     title = f"Signal changed: {prev_signal} → {curr_signal}"
-    message = (
-        f"{curr_signal} (was {prev_signal}) · Price: {price}"
-    )
+    message = f"{curr_signal} (was {prev_signal}) · Price: {price}"
     return Alert(
         ticker=curr.get("ticker", ""),
         alert_type="signal_change",
@@ -89,10 +87,7 @@ def _ma_crossover(prev: dict[str, Any], curr: dict[str, Any]) -> Alert | None:
     # Golden cross: MA5 crosses above MA20
     if ma5_prev < ma20_prev and ma5_curr >= ma20_curr:
         title = "Golden cross — MA5 crossed above MA20"
-        message = (
-            f"MA5 ({ma5_curr:.2f}) crossed above MA20 ({ma20_curr:.2f}) · "
-            f"Price: {price}"
-        )
+        message = f"MA5 ({ma5_curr:.2f}) crossed above MA20 ({ma20_curr:.2f}) · Price: {price}"
         return Alert(
             ticker=curr.get("ticker", ""),
             alert_type="ma_crossover",
@@ -106,10 +101,7 @@ def _ma_crossover(prev: dict[str, Any], curr: dict[str, Any]) -> Alert | None:
     # Death cross: MA5 crosses below MA20
     if ma5_prev > ma20_prev and ma5_curr <= ma20_curr:
         title = "Death cross — MA5 crossed below MA20"
-        message = (
-            f"MA5 ({ma5_curr:.2f}) crossed below MA20 ({ma20_curr:.2f}) · "
-            f"Price: {price}"
-        )
+        message = f"MA5 ({ma5_curr:.2f}) crossed below MA20 ({ma20_curr:.2f}) · Price: {price}"
         return Alert(
             ticker=curr.get("ticker", ""),
             alert_type="ma_crossover",
@@ -133,10 +125,7 @@ def _rsi_breach(curr: dict[str, Any], config: AlertConfig) -> Alert | None:
 
     if rsi >= config.rsi_overbought:
         title = f"RSI overbought: {rsi:.1f}"
-        message = (
-            f"RSI hit {rsi:.1f} (threshold ≥{config.rsi_overbought}) · "
-            f"Price: {price}"
-        )
+        message = f"RSI hit {rsi:.1f} (threshold ≥{config.rsi_overbought}) · Price: {price}"
         return Alert(
             ticker=curr.get("ticker", ""),
             alert_type="rsi",
@@ -149,10 +138,7 @@ def _rsi_breach(curr: dict[str, Any], config: AlertConfig) -> Alert | None:
 
     if rsi <= config.rsi_oversold:
         title = f"RSI oversold: {rsi:.1f}"
-        message = (
-            f"RSI hit {rsi:.1f} (threshold ≤{config.rsi_oversold}) · "
-            f"Price: {price}"
-        )
+        message = f"RSI hit {rsi:.1f} (threshold ≤{config.rsi_oversold}) · Price: {price}"
         return Alert(
             ticker=curr.get("ticker", ""),
             alert_type="rsi",
@@ -179,10 +165,7 @@ def _macd_flip(prev: dict[str, Any], curr: dict[str, Any]) -> Alert | None:
     # Bullish crossover: was negative, now positive
     if prev_hist < 0 and curr_hist >= 0:
         title = "MACD bullish crossover — histogram turned positive"
-        message = (
-            f"MACD histogram: {prev_hist:.4f} → {curr_hist:.4f} · "
-            f"Price: {price}"
-        )
+        message = f"MACD histogram: {prev_hist:.4f} → {curr_hist:.4f} · Price: {price}"
         return Alert(
             ticker=curr.get("ticker", ""),
             alert_type="macd",
@@ -196,10 +179,7 @@ def _macd_flip(prev: dict[str, Any], curr: dict[str, Any]) -> Alert | None:
     # Bearish crossover: was positive, now negative
     if prev_hist > 0 and curr_hist <= 0:
         title = "MACD bearish crossover — histogram turned negative"
-        message = (
-            f"MACD histogram: {prev_hist:.4f} → {curr_hist:.4f} · "
-            f"Price: {price}"
-        )
+        message = f"MACD histogram: {prev_hist:.4f} → {curr_hist:.4f} · Price: {price}"
         return Alert(
             ticker=curr.get("ticker", ""),
             alert_type="macd",
@@ -224,10 +204,7 @@ def _volume_spike(curr: dict[str, Any], config: AlertConfig) -> Alert | None:
     price = curr.get("price", "?")
 
     title = f"Volume spike: {ratio:.1f}x average"
-    message = (
-        f"Volume: {curr_vol:.0f} vs avg {avg_vol:.0f} ({ratio:.1f}x) · "
-        f"Price: {price}"
-    )
+    message = f"Volume: {curr_vol:.0f} vs avg {avg_vol:.0f} ({ratio:.1f}x) · Price: {price}"
     return Alert(
         ticker=curr.get("ticker", ""),
         alert_type="volume_spike",
@@ -256,10 +233,7 @@ def _rsi_recovery(
     # Recovered from oversold: was below threshold, now above threshold + 5
     if prev_rsi < config.rsi_oversold and curr_rsi >= config.rsi_oversold + 5:
         title = f"RSI recovered from oversold: {curr_rsi:.1f}"
-        message = (
-            f"RSI climbed from {prev_rsi:.1f} to {curr_rsi:.1f} · "
-            f"Price: {price}"
-        )
+        message = f"RSI climbed from {prev_rsi:.1f} to {curr_rsi:.1f} · Price: {price}"
         return Alert(
             ticker=curr.get("ticker", ""),
             alert_type="rsi",
@@ -273,10 +247,7 @@ def _rsi_recovery(
     # Recovered from overbought: was above threshold, now below threshold - 5
     if prev_rsi > config.rsi_overbought and curr_rsi <= config.rsi_overbought - 5:
         title = f"RSI recovered from overbought: {curr_rsi:.1f}"
-        message = (
-            f"RSI dropped from {prev_rsi:.1f} to {curr_rsi:.1f} · "
-            f"Price: {price}"
-        )
+        message = f"RSI dropped from {prev_rsi:.1f} to {curr_rsi:.1f} · Price: {price}"
         return Alert(
             ticker=curr.get("ticker", ""),
             alert_type="rsi",

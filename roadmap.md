@@ -408,11 +408,11 @@ Extend the tool to support multiple stock exchanges (US, etc.) with technical an
 
 | # | Status | Feature | Why | Delivery |
 |---|---|---|---|---|
-| X1.1 | 📋 | **Exchange registry** (`exchanges.py`) — exchange definitions (suffix, name, currency symbol) | Foundation for multi-exchange support | Sprint 5 |
-| X1.2 | 📋 | **`--exchange` CLI flag** — required for non-IDX stocks, defaults to IDX | Explicit exchange selection | Sprint 5 |
-| X1.3 | 📋 | **Refactor `fetcher.py`** — remove hardcoded `.JK`, use exchange config | Exchange-agnostic data fetching | Sprint 5 |
-| X1.4 | 📋 | **Currency-aware formatting** — show "$" for US, "Rp" for IDX | Correct currency display per exchange | Sprint 5 |
-| X1.5 | 📋 | **DCA calculator** (`--dca --amount 10`) — technical analysis-based ranking | User's primary use case: pick best ETF for $10/mo | Sprint 5 |
+| X1.1 | ✅ | **Exchange registry** (`exchanges.py`) — exchange definitions (suffix, name, currency symbol) | Foundation for multi-exchange support | Sprint 5 |
+| X1.2 | ✅ | **`--exchange` CLI flag** — required for non-IDX stocks, defaults to IDX | Explicit exchange selection | Sprint 5 |
+| X1.3 | ✅ | **Refactor `fetcher.py`** — remove hardcoded `.JK`, use exchange config | Exchange-agnostic data fetching | Sprint 5 |
+| X1.4 | ✅ | **Currency-aware formatting** — show "$" for US, "Rp" for IDX | Correct currency display per exchange | Sprint 5 |
+| X1.5 | ✅ | **DCA calculator** (`--dca --amount 10`) — technical analysis-based ranking | User's primary use case: pick best ETF for $10/mo | Sprint 5 |
 
 ### 📅 Q2 — Should Have (Schedule)
 
@@ -533,8 +533,8 @@ X2.3 multi-exchange watch ── needs watcher + exchange support
 
 | Sprint | Focus | Items | Status |
 |---|---|---|---|
-| **Sprint 5** | Core Multi-Exchange | X1.1 → X1.2 → X1.3 → X1.4 → X1.5 | 📋 Next |
-| **Sprint 6** | US Lists + DCA | X2.1, X2.2 | 📋 Todo |
+| **Sprint 5** | Core Multi-Exchange | X1.1 → X1.2 → X1.3 → X1.4 → X1.5 | ✅ Done |
+| **Sprint 6** | US Lists + DCA | X2.1, X2.2 | 📋 Next |
 | **Sprint 7** | Multi-Exchange Watch | X2.3, X3.1 | 📋 Todo |
 
 ---

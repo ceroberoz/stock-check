@@ -10,11 +10,36 @@ import yaml
 
 # IDX30 constituent stocks (period May–Jul 2026)
 IDX30_STOCKS: list[str] = [
-    "AADI", "ADMR", "ADRO", "AMRT", "ANTM", "ASII",
-    "BBCA", "BBNI", "BBRI", "BMRI", "BRPT", "BUMI",
-    "CPIN", "EMTK", "GOTO", "ICBP", "INCO", "INDF",
-    "INKP", "JPFA", "KLBF", "MBMA", "MDKA", "MEDC",
-    "PGAS", "PGEO", "PTBA", "TLKM", "UNTR", "UNVR",
+    "AADI",
+    "ADMR",
+    "ADRO",
+    "AMRT",
+    "ANTM",
+    "ASII",
+    "BBCA",
+    "BBNI",
+    "BBRI",
+    "BMRI",
+    "BRPT",
+    "BUMI",
+    "CPIN",
+    "EMTK",
+    "GOTO",
+    "ICBP",
+    "INCO",
+    "INDF",
+    "INKP",
+    "JPFA",
+    "KLBF",
+    "MBMA",
+    "MDKA",
+    "MEDC",
+    "PGAS",
+    "PGEO",
+    "PTBA",
+    "TLKM",
+    "UNTR",
+    "UNVR",
 ]
 
 
@@ -110,12 +135,8 @@ def load_config(path: str = "config.yaml") -> AppConfig:
 
     # ── Telegram section ──────────────────────────────────────────────────
     telegram_raw = raw.get("telegram", {})
-    bot_token = _env_or_val(
-        str(telegram_raw.get("bot_token", "")), "STOCK_CHECK_BOT_TOKEN"
-    )
-    chat_id = _env_or_val(
-        str(telegram_raw.get("chat_id", "")), "STOCK_CHECK_CHAT_ID"
-    )
+    bot_token = _env_or_val(str(telegram_raw.get("bot_token", "")), "STOCK_CHECK_BOT_TOKEN")
+    chat_id = _env_or_val(str(telegram_raw.get("chat_id", "")), "STOCK_CHECK_CHAT_ID")
 
     if not bot_token:
         raise ValueError(

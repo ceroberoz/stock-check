@@ -82,7 +82,7 @@ def get_cached_hist(
     ticker: str, period: str, interval: str, ttl: int = _DEFAULT_TTL
 ) -> pd.DataFrame | None:
     """Return cached OHLCV DataFrame if fresh, otherwise None.
-    
+
     Parameters
     ----------
     ticker:
@@ -93,43 +93,41 @@ def get_cached_hist(
         Candle interval (e.g. "1d", "1h").
     ttl:
         Cache TTL in seconds. Pass 0 to disable caching for this call.
-    
+
     Returns
     -------
     DataFrame or None if cache miss or expired.
     """
     if ttl <= 0:
         return None
-    
+
     cache = _load_cache()
     key = _cache_key(ticker, period, interval)
     entry = cache.get(key)
     if entry is None:
         return None
-    
+
     cached_at = entry.get("cached_at", 0)
     age = time.time() - cached_at
     if age > ttl:
         return None
-    
+
     data = entry.get("data", [])
     if not data:
         return None
-    
+
     log.debug("Cache HIT for %s (age=%.0fs, ttl=%ds)", key, age, ttl)
     return jsonable_to_hist(data)
 
 
-def set_cached_hist(
-    ticker: str, period: str, interval: str, hist: pd.DataFrame
-) -> None:
+def set_cached_hist(ticker: str, period: str, interval: str, hist: pd.DataFrame) -> None:
     """Store OHLCV DataFrame in cache.
-    
+
     Silently skips empty DataFrames.
     """
     if hist.empty:
         return
-    
+
     cache = _load_cache()
     key = _cache_key(ticker, period, interval)
     cache[key] = {
