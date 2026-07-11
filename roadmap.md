@@ -384,4 +384,159 @@ P2.3 logging ───────────────── needs watcher l
 
 ---
 
-*Last updated: 2026-07-10*
+## Phase 3 — Multi-Exchange Support & DCA Analysis
+
+Extend the tool to support multiple stock exchanges (US, etc.) with technical analysis-based Dollar Cost Averaging (DCA) recommendations.
+
+### Design Principles
+
+- **`--exchange` required for non-IDX stocks** — no auto-detection, explicit is better
+- **DCA ranking by technical analysis** — signal strength, not price or currency
+- **No currency conversion** — show prices in native currency (USD for US, IDR for IDX)
+- **Analysis only** — DCA tool recommends, user executes manually
+
+### Eisenhower Matrix Legend
+
+| Quadrant | Label | Priority |
+|---|---|---|
+| **Q1 — Urgent & Important** | 🏆 **Must Have** | Do first |
+| **Q2 — Not Urgent & Important** | 📅 **Should Have** | Schedule |
+| **Q3 — Urgent & Not Important** | 🙋 **Could Have** | Delegate / next sprints |
+| **Q4 — Not Urgent & Not Important** | 🗓️ **Won't Have (yet)** | Later / maybe never |
+
+### 🏆 Q1 — Must Have (Do First)
+
+| # | Status | Feature | Why | Delivery |
+|---|---|---|---|---|
+| X1.1 | 📋 | **Exchange registry** (`exchanges.py`) — exchange definitions (suffix, name, currency symbol) | Foundation for multi-exchange support | Sprint 5 |
+| X1.2 | 📋 | **`--exchange` CLI flag** — required for non-IDX stocks, defaults to IDX | Explicit exchange selection | Sprint 5 |
+| X1.3 | 📋 | **Refactor `fetcher.py`** — remove hardcoded `.JK`, use exchange config | Exchange-agnostic data fetching | Sprint 5 |
+| X1.4 | 📋 | **Currency-aware formatting** — show "$" for US, "Rp" for IDX | Correct currency display per exchange | Sprint 5 |
+| X1.5 | 📋 | **DCA calculator** (`--dca --amount 10`) — technical analysis-based ranking | User's primary use case: pick best ETF for $10/mo | Sprint 5 |
+
+### 📅 Q2 — Should Have (Schedule)
+
+| # | Status | Feature | Why | Notes |
+|---|---|---|---|---|
+| X2.1 | 📋 | **US stock lists** — popular ETFs (SPY, QQQ, SCHG, VOO) | Quick access to common US tickers | |
+| X2.2 | 📋 | **`--list etf --exchange US`** — list US ETFs with technical analysis | Same as IDX30 but for US market | |
+| X2.3 | 📋 | **Multi-exchange watchlist** — watch IDX + US stocks together | Unified view across portfolios | |
+
+### 🙋 Q3 — Could Have (Next)
+
+| # | Status | Feature | Why | Notes |
+|---|---|---|---|---|
+| X3.1 | 📋 | **Other exchanges** — Tokyo (.T), Hong Kong (.HK), Singapore (.SI) | Broader market coverage | |
+| X3.2 | 📋 | **Exchange-specific MA periods** — different defaults per market | US and IDX may have different trading patterns | |
+| X3.3 | 📋 | **Portfolio tracker** — track holdings across exchanges | See total value in one place | |
+
+### 🗓️ Q4 — Won't Have (Yet)
+
+| # | Status | Feature | Why not now |
+|---|---|---|---|
+| X4.1 | 📋 | **Currency conversion** | User explicitly doesn't need it |
+| X4.2 | 📋 | **Auto-trading** | Analysis only — no order execution |
+| X4.3 | 📋 | **Real-time US data** | yfinance REST is sufficient for daily analysis |
+
+### Exchange Registry Design
+
+```python
+# exchanges.py
+EXCHANGES = {
+    "IDX": {
+        "suffix": ".JK",
+        "name": "Jakarta Stock Exchange",
+        "currency": "IDR",
+        "currency_symbol": "Rp",
+        "default": True,  # No --exchange needed
+        "lists": {
+            "idx30": ["BBCA", "BBRI", "TLKM", ...]
+        }
+    },
+    "US": {
+        "suffix": "",  # US stocks don't need suffix
+        "name": "US Market",
+        "currency": "USD",
+        "currency_symbol": "$",
+        "default": False,  # Requires --exchange US
+        "lists": {
+            "etf": ["SPY", "QQQ", "SCHG", "VOO", "IVV", "DIA"],
+            "sp500": ["AAPL", "MSFT", "GOOGL", ...]  # Top 20
+        }
+    }
+}
+```
+
+### DCA Logic (Technical Analysis-Based)
+
+**Ranking factors:**
+1. **Signal strength** — STRONG BUY > BUY > NEUTRAL > SELL > STRONG SELL
+2. **RSI position** — prefer RSI 40-60 (neutral, room to grow) over >70 (overbought)
+3. **MACD momentum** — positive histogram > negative
+4. **MA alignment** — price above more MAs = stronger trend
+
+**Output:**
+```
+$ uv run stock-check --check SCHG,SPY,QQQ --exchange US --dca --amount 10
+
+╔══════════════════════════════════════════════════════╗
+║           DCA Analysis — US ETFs                      ║
+╠══════════════════════════════════════════════════════╣
+║  Monthly Investment: $10 USD                           ║
+║──────────────────────────────────────────────────────║
+║  Ticker  Price    Signal    RSI   MACD   Score  Rank  ║
+║──────────────────────────────────────────────────────║
+║  SCHG    $82.50   BUY       54.2  +12    85/100  1    ║
+║  SPY     $585.00  BUY       62.1  +8     78/100  2    ║
+║  QQQ     $520.00  NEUTRAL   45.8  -3     52/100  3    ║
+║──────────────────────────────────────────────────────║
+║  Recommendation: SCHG                                  ║
+║  - Best technical signal (BUY, RSI neutral)            ║
+║  - Most shares per $10 (0.121 shares)                 ║
+║  - Positive MACD momentum                              ║
+╚══════════════════════════════════════════════════════╝
+```
+
+### CLI Usage Examples
+
+```bash
+# IDX (default, no --exchange needed)
+uv run stock-check --check BBCA
+uv run stock-check --list idx30
+
+# US stocks (requires --exchange US)
+uv run stock-check --check SCHG --exchange US
+uv run stock-check --check SPY,QQQ --exchange US --format json
+
+# DCA analysis
+uv run stock-check --check SCHG,SPY,QQQ --exchange US --dca --amount 10
+
+# US ETF list
+uv run stock-check --list etf --exchange US
+```
+
+### Dependency Graph (Multi-Exchange Phase)
+
+```
+X1.1 exchanges.py      ←── no deps
+X1.2 --exchange flag   ←── X1.1 (needs exchange registry)
+X1.3 refactor fetcher  ←── X1.1 (uses exchange config)
+X1.4 currency format   ←── X1.1 (needs currency symbol)
+X1.5 DCA calculator    ←── X1.2, X1.3 (needs exchange + fetcher)
+                          │
+X2.1 US stock lists ──────┘  needs exchange registry
+X2.2 --list etf ──────────── needs X2.1 + formatter
+X2.3 multi-exchange watch ── needs watcher + exchange support
+```
+
+### Sprint Plan
+
+| Sprint | Focus | Items | Status |
+|---|---|---|---|
+| **Sprint 5** | Core Multi-Exchange | X1.1 → X1.2 → X1.3 → X1.4 → X1.5 | 📋 Next |
+| **Sprint 6** | US Lists + DCA | X2.1, X2.2 | 📋 Todo |
+| **Sprint 7** | Multi-Exchange Watch | X2.3, X3.1 | 📋 Todo |
+
+---
+
+*Last updated: 2026-07-11*
