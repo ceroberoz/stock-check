@@ -1,4 +1,4 @@
-"""yfinance wrapper with auto .JK suffix for Indonesian stocks."""
+"""yfinance wrapper with exchange-aware suffix handling."""
 
 import logging
 import warnings
@@ -6,61 +6,44 @@ import warnings
 import pandas as pd
 import yfinance as yf
 
-# yfinance adds a 'default' filter for DeprecationWarning in its own module,
-# which overrides Python's default 'ignore' and lets Pandas4Warning through.
-# Re-assert silence for this specific subclass.
-warnings.filterwarnings(
-    "ignore", category=pd.errors.Pandas4Warning, module="yfinance"
-)
+from stock_checker.exchanges import ensure_suffix
 
-IDX_SUFFIX = ".JK"
+warnings.filterwarnings("ignore", category=pd.errors.Pandas4Warning, module="yfinance")
 
-# For each candle interval, fetch at least this much calendar history
-# so the longest MA window always has enough data.
 _INTERVAL_PERIOD: dict[str, str] = {
-    "1d": "3mo",   # 50 daily candles needed for MA50 → 3mo gives ~60
-    "1wk": "1y",   # 24 weekly candles needed for MA24 → 1y gives ~52
-    "1mo": "2y",   # 12 monthly candles needed for MA12 → 2y gives ~24
-    "5d": "6mo",   # 9 five-day candles needed for MA9 → 6mo gives ~36
-    "1h": "2mo",   # 50 hourly candles needed for MA50 → 2mo gives ~320
+    "1d": "3mo",
+    "1wk": "1y",
+    "1mo": "2y",
+    "5d": "6mo",
+    "1h": "2mo",
 }
 
 logger = logging.getLogger(__name__)
 
 
-def _ensure_jk_suffix(symbol: str) -> str:
-    """Append .JK suffix if the symbol doesn't already have it.
-
-    Indonesian stocks on Yahoo Finance require the .JK suffix (e.g. BBCA.JK).
-    """
-    s = symbol.strip().upper()
-    if not s.endswith(IDX_SUFFIX):
-        s += IDX_SUFFIX
-    return s
-
-
 def fetch_history(
-    symbol: str, days: int = 1, interval: str = "1d", cache_ttl: int = 0
+    symbol: str, days: int = 1, interval: str = "1d", exchange: str = "IDX", cache_ttl: int = 0
 ) -> tuple[str, pd.DataFrame]:
     """Download OHLCV history for *symbol* with enough data for MA calcs.
 
     Parameters
     ----------
     symbol :
-        Stock symbol (with or without .JK suffix).
+        Stock symbol (with or without exchange suffix).
     days :
         Number of lookback candles to keep for the summary window.
     interval :
         Candle interval (1d, 1wk, 1mo, 5d, 1h).
+    exchange :
+        Exchange code (IDX, US, etc.).
 
     Returns
     -------
         ``(ticker, hist)`` where *hist* is a DataFrame.
     """
-    ticker = _ensure_jk_suffix(symbol)
+    ticker = ensure_suffix(symbol, exchange)
     period = _INTERVAL_PERIOD.get(interval, "3mo")
 
-    # Check cache first
     if cache_ttl > 0:
         from stock_checker.cache import get_cached_hist
 
@@ -77,7 +60,6 @@ def fetch_history(
             f"Check the symbol or your network connection."
         )
 
-    # Store in cache
     if cache_ttl > 0:
         from stock_checker.cache import set_cached_hist
 
@@ -87,14 +69,14 @@ def fetch_history(
 
 
 def fetch_stock_data(
-    symbol: str, days: int = 1, interval: str = "1d"
+    symbol: str, days: int = 1, interval: str = "1d", exchange: str = "IDX"
 ) -> dict:
     """Fetch a lightweight summary dict for *symbol* over *days* lookback.
 
     Returns keys: ticker, last_price, change, change_pct, open, high,
     low, close, period.
     """
-    ticker, hist = fetch_history(symbol, days, interval)
+    ticker, hist = fetch_history(symbol, days, interval, exchange=exchange)
 
     recent = hist.tail(days) if len(hist) >= days else hist
     last = recent.iloc[-1]
