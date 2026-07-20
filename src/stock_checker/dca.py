@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 
-def calculate_dca_ranking(results: list[dict], amount: float = 0, exchange: str = "IDX") -> list[dict]:
+def calculate_dca_ranking(
+    results: list[dict], amount: float = 0, exchange: str = "IDX"
+) -> list[dict]:
     """Rank stocks for DCA based on technical analysis and compute allocation.
 
     Scoring factors:
@@ -133,7 +135,9 @@ def _score_ma_alignment(price: float, mas: dict[str, float]) -> float:
     return (above / total) * 10
 
 
-def format_dca_output(ranked: list[dict], amount: float, currency_symbol: str, exchange: str = "IDX") -> str:
+def format_dca_output(
+    ranked: list[dict], amount: float, currency_symbol: str, exchange: str = "IDX"
+) -> str:
     """Format DCA analysis output as a rich box table."""
     WIDTH = 76
 
@@ -180,14 +184,20 @@ def format_dca_output(ranked: list[dict], amount: float, currency_symbol: str, e
     winner = ranked[0]
     rec_lines = []
     rec_lines.append("  Recommended Allocation:")
-    rec_lines.append(f"  - Top pick: {winner['ticker']} ({currency_symbol} {winner.get('actual_cost', 0):,.0f})")
-    rec_lines.append(f"  - Best signal: {winner['signal'][0]} | RSI: {winner.get('rsi', 'N/A')} | Score: {winner['score']:.0f}/100")
+    rec_lines.append(
+        f"  - Top pick: {winner['ticker']} ({currency_symbol} {winner.get('actual_cost', 0):,.0f})"
+    )
+    rec_lines.append(
+        f"  - Best signal: {winner['signal'][0]} | RSI: {winner.get('rsi', 'N/A')} | Score: {winner['score']:.0f}/100"
+    )
 
     if exchange == "IDX":
         total_lots = sum(r.get("lots", 0) for r in ranked)
         total_cost = sum(r.get("actual_cost", 0) for r in ranked)
         remaining = amount - total_cost
-        rec_lines.append(f"  - Total: {total_lots} lots | Cost: {currency_symbol} {total_cost:,.0f} | Remaining: {currency_symbol} {remaining:,.0f}")
+        rec_lines.append(
+            f"  - Total: {total_lots} lots | Cost: {currency_symbol} {total_cost:,.0f} | Remaining: {currency_symbol} {remaining:,.0f}"
+        )
     else:
         rec_lines.append("  - Allocation based on weighted technical scores")
 
