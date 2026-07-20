@@ -155,7 +155,8 @@ def _handle_list_mode(args: argparse.Namespace) -> None:
             progress.advance(task)
 
     if results:
-        console.print(format_list_table(results))
+        currency_symbol = exchange_config["currency_symbol"]
+        console.print(format_list_table(results, currency_symbol=currency_symbol))
     else:
         console.print("[red]No data retrieved.[/red]")
 
