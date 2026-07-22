@@ -82,3 +82,49 @@ def send_telegram(bot_token: str, chat_id: str, alert: Alert) -> bool:
     except Exception as e:
         logger.error("Unexpected error sending Telegram message: %s", e)
         return False
+
+
+def send_telegram_text(bot_token: str, chat_id: str, text: str) -> bool:
+    """Send a plain text message via Telegram.
+
+    Used for daily recommendations, status updates, and other non-alert messages.
+    Returns True on success, False on failure.
+    Uses urllib (stdlib) — no external HTTP dependencies.
+    """
+    if not bot_token or not chat_id:
+        logger.error("bot_token and chat_id must be non-empty")
+        return False
+
+    payload: dict[str, object] = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": "HTML",
+        "disable_notification": False,
+    }
+
+    url = _TELEGRAM_API.format(token=bot_token)
+    data = json.dumps(payload).encode("utf-8")
+
+    req = urllib.request.Request(
+        url,
+        data=data,
+        method="POST",
+        headers={"Content-Type": "application/json"},
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status != 200:
+                body = resp.read().decode("utf-8", errors="replace")
+                logger.warning("Telegram API returned HTTP %d: %s", resp.status, body)
+                return False
+            return True
+    except urllib.error.URLError as e:
+        logger.warning("Telegram API network error: %s", e)
+        return False
+    except json.JSONEncodeError as e:
+        logger.error("Telegram message JSON encode error: %s", e)
+        return False
+    except Exception as e:
+        logger.error("Unexpected error sending Telegram message: %s", e)
+        return False

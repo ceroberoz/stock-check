@@ -78,7 +78,15 @@ def fetch_stock_data(
     """
     ticker, hist = fetch_history(symbol, days, interval, exchange=exchange)
 
-    recent = hist.tail(days) if len(hist) >= days else hist
+    hist_clean = hist.dropna(subset=["Close", "Open", "High", "Low"])
+    
+    if hist_clean.empty:
+        raise ValueError(
+            f"No valid data returned for {ticker} with interval={interval}. "
+            f"All rows contain NaN values."
+        )
+
+    recent = hist_clean.tail(days) if len(hist_clean) >= days else hist_clean
     last = recent.iloc[-1]
     first = recent.iloc[0]
 

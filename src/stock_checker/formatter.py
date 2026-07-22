@@ -254,6 +254,85 @@ def format_list_table(results: list[dict], currency_symbol: str = "Rp") -> str:
     return buf.getvalue()
 
 
+def format_screener_table(
+    results: list[dict],
+    currency_symbol: str = "Rp",
+    total_scanned: int = 0,
+    errors_count: int = 0,
+) -> str:
+    from rich.table import Table
+    from rich.text import Text
+    from datetime import date
+
+    table = Table(
+        title=f"IDX Screener — Daily Opportunities ({date.today().isoformat()})",
+        show_header=True,
+        header_style="bold cyan",
+        show_lines=False,
+    )
+
+    table.add_column("#", justify="right", width=4)
+    table.add_column("Ticker", style="bold", width=8)
+    table.add_column("Price", justify="right", width=12)
+    table.add_column("Change", justify="right", width=14)
+    table.add_column("RSI", justify="right", width=8)
+    table.add_column("MACD", justify="right", width=10)
+    table.add_column("Score", justify="right", width=8)
+    table.add_column("Signal", width=14)
+
+    score_styles = {
+        "STRONG BUY": "bold green",
+        "BUY": "green",
+        "WATCH": "yellow",
+        "AVOID": "red",
+        "EXIT": "bold red",
+    }
+
+    for i, r in enumerate(results, 1):
+        change_color = "green" if r["change"] >= 0 else "red"
+        change_str = f"{r['change']:+,.0f} ({r['change_pct']:+.1f}%)"
+        change_text = Text(change_str, style=change_color)
+
+        rsi_val = f"{r['rsi']:.1f}" if r["rsi"] is not None else "—"
+
+        macd = r.get("macd")
+        if macd is not None:
+            hist = macd["histogram"]
+            macd_str = f"{hist:+.1f}"
+            macd_color = "green" if hist >= 0 else "red"
+            macd_text = Text(macd_str, style=macd_color)
+        else:
+            macd_text = Text("—")
+
+        score_label = r.get("score_label", "WATCH")
+        score_style = score_styles.get(score_label, "")
+        score_text = Text(f"{r['score']:.0f}", style=score_style)
+        signal_text = Text(score_label, style=score_style)
+
+        table.add_row(
+            str(i),
+            r["ticker"],
+            f"{currency_symbol} {r['last_price']:,.2f}",
+            change_text,
+            rsi_val,
+            macd_text,
+            score_text,
+            signal_text,
+        )
+
+    from io import StringIO
+    from rich.console import Console
+
+    buf = StringIO()
+    console = Console(file=buf, width=100)
+    console.print(table)
+
+    summary = f"\nScanned: {total_scanned} stocks | Errors: {errors_count} | Showing top {len(results)}"
+    console.print(summary)
+
+    return buf.getvalue()
+
+
 def format_json(
     data: dict,
     mas: dict[str, float],

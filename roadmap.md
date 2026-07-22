@@ -539,4 +539,182 @@ X2.3 multi-exchange watch ── needs watcher + exchange support
 
 ---
 
-*Last updated: 2026-07-11*
+---
+
+## Phase 4 — Full IDX Stock Screener (Change Request CR-001)
+
+**Request Date:** 2026-07-23
+**Requestor:** User
+**Goal:** Screen ALL ~800+ IDX stocks daily, filter by technical analysis, and identify stocks with 3-5% short-term profit potential.
+
+### Problem Statement
+
+Current tool only covers IDX30 (30 stocks). User needs:
+1. **Complete IDX coverage** — all ~800+ listed stocks, not just blue chips
+2. **Daily filtering** — automated scan to find actionable opportunities
+3. **Profit-focused recommendations** — stocks likely to move 3-5% in the near term
+4. **Actionable output** — clear BUY/WATCH/AVOID signals with entry points
+
+### Eisenhower Matrix
+
+| Quadrant | Label | Priority |
+|---|---|---|
+| **Q1 — Urgent & Important** | 🏆 **Must Have** | Do first |
+| **Q2 — Not Urgent & Important** | 📅 **Should Have** | Schedule |
+| **Q3 — Urgent & Not Important** | 🙋 **Could Have** | Delegate / next sprints |
+| **Q4 — Not Urgent & Not Important** | 🗓️ **Won't Have (yet)** | Later / maybe never |
+
+### 🏆 Q1 — Must Have (Do First)
+
+| # | Status | Feature | Why | Delivery |
+|---|---|---|---|---|
+| S1.1 | 📋 | **Full IDX stock list** — fetch/regist all ~800+ IDX tickers from Yahoo Finance or IDX API | Foundation — can't screen what we can't enumerate | Sprint 8 |
+| S1.2 | 📋 | **`--screener` command** — new CLI mode for full market scan | Dedicated entry point for screening | Sprint 8 |
+| S1.3 | 📋 | **Batch data fetch** — parallel/async fetch for 800+ stocks with progress | Performance — sequential fetch would take 30+ min | Sprint 8 |
+| S1.4 | 📋 | **Short-term scoring engine** — weighted score for 3-5% profit potential | Core intelligence — identifies opportunities | Sprint 8 |
+| S1.5 | 📋 | **Filtered output** — top N stocks ranked by score, actionable signals | Deliverable — what user sees | Sprint 8 |
+
+### 📅 Q2 — Should Have (Schedule)
+
+| # | Status | Feature | Why | Notes |
+|---|---|---|---|---|
+| S2.1 | 📋 | **Caching layer** — cache stock list + data for daily reuse | Avoid re-fetching 800+ stocks every run | TTL: 1 day for list, 5 min for price |
+| S2.2 | 📋 | **Volume filter** — exclude stocks with avg volume < threshold | Illiquid stocks are risky for 3-5% target | Default: > 1M IDR daily volume |
+| S2.3 | 📋 | **Price filter** — exclude penny stocks (< Rp 50) or very expensive | Focus on tradeable range | Configurable |
+| S2.4 | 📋 | **Sector grouping** — group results by IDX sector | Context for diversification | |
+| S2.5 | 📋 | **Watchlist integration** — save screened stocks to watchlist for alerts | Connect screener → watcher | |
+
+### 🙋 Q3 — Could Have (Next)
+
+| # | Status | Feature | Why | Notes |
+|---|---|---|---|---|
+| S3.1 | 📋 | **Historical accuracy tracking** — did recommended stocks actually hit 3-5%? | Validates the scoring model | Needs state persistence |
+| S3.2 | 📋 | **Machine learning scoring** — train on historical data | Could improve accuracy over time | Heavy scope |
+| S3.3 | 📋 | **Pattern recognition** — candlestick patterns, breakout detection | Additional signals beyond MA/RSI/MACD | |
+| S3.4 | 📋 | **Scheduled auto-screener** — cron job that runs daily and pushes results | Hands-off daily scan | |
+
+### 🗓️ Q4 — Won't Have (Yet)
+
+| # | Status | Feature | Why not now |
+|---|---|---|---|
+| S4.1 | 📋 | **Fundamental analysis** | Out of scope — technical only |
+| S4.2 | 📋 | **Insider trading data** | Not available via yfinance |
+| S4.3 | 📋 | **News sentiment analysis** | Requires NLP pipeline |
+
+---
+
+### Screener Scoring Engine (S1.4 Detail)
+
+**Goal:** Identify stocks with highest probability of 3-5% move in next 1-5 trading days.
+
+**Scoring Factors (100 points total):**
+
+| Factor | Weight | Logic | Rationale |
+|---|---|---|---|
+| **Trend Strength** | 25 pts | Price position relative to MA20/MA50 | Strong uptrend = momentum continuation |
+| **RSI Momentum** | 20 pts | RSI 40-65 = max score, <30 or >70 penalized | Not overbought, room to run |
+| **MACD Signal** | 20 pts | Bullish crossover, positive histogram | Momentum confirmation |
+| **Volume Trend** | 15 pts | Volume increasing vs 20-day average | Smart money accumulation |
+| **Price Pattern** | 10 pts | Near support, breakout setup | Entry point quality |
+| **Volatility** | 10 pts | ATR in sweet spot (not too flat, not too wild) | 3-5% move requires some volatility |
+
+**Signal Thresholds:**
+
+| Score | Signal | Expected Action |
+|---|---|---|
+| 80-100 | 🟢 **STRONG BUY** | Enter position, target 5% |
+| 65-79 | 🟡 **BUY** | Enter position, target 3% |
+| 50-64 | 🟠 **WATCH** | Monitor for entry signal |
+| 35-49 | 🔴 **AVOID** | No action |
+| 0-34 | ⛔ **EXIT** | Sell if holding |
+
+---
+
+### CLI Usage
+
+```bash
+# Full IDX screener — top 20 opportunities
+uv run stock-check --screener
+
+# Screener with custom filters
+uv run stock-check --screener --min-volume 500000 --min-price 100
+
+# Top 10 only
+uv run stock-check --screener --top 10
+
+# JSON output for automation
+uv run stock-check --screener --format json
+
+# Save results to file
+uv run stock-check --screener --output results.csv --format csv
+```
+
+### Output Format
+
+```
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                    IDX Screener — Daily Opportunities                         ║
+║                    2026-07-23 | Scanned: 847 stocks                          ║
+╠════════════════════════════════════════════════════════════════════════════════╣
+║  #  Ticker   Price     Change   RSI   MACD   Score  Signal    Target         ║
+║──────────────────────────────────────────────────────────────────────────────║
+║  1  ACST     Rp 1,250  +4.2%    58    +12    87    STRONG    5% (Rp 1,312)  ║
+║  2  BTPS     Rp 2,100  +2.1%    52    +8     82    STRONG    5% (Rp 2,205)  ║
+║  3  BRMS     Rp 890     +1.8%    48    +15    79    BUY       3% (Rp 917)    ║
+║  4  INDF     Rp 6,500  +0.9%    55    +5     76    BUY       3% (Rp 6,695)  ║
+║  5  TLKM     Rp 2,480  +0.4%    44    -3     62    WATCH     —              ║
+║  ...                                                                        ║
+║──────────────────────────────────────────────────────────────────────────────║
+║  Summary: 12 STRONG BUY | 28 BUY | 156 WATCH | 489 AVOID | 162 EXIT         ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+### Implementation Plan
+
+```
+Phase 4 Dependency Graph:
+
+S1.1 Full IDX list        ←── no deps (fetch from Yahoo Finance / IDX)
+S1.2 --screener CLI       ←── S1.1 (needs stock list)
+S1.3 Batch fetch          ←── S1.1 (needs to iterate list)
+S1.4 Scoring engine       ←── S1.3 (needs price + indicator data)
+S1.5 Filtered output      ←── S1.4 (needs scores)
+
+S2.1 Caching              ←── S1.3 (cache fetch results)
+S2.2 Volume filter        ←── S1.4 (add to scoring)
+S2.3 Price filter         ←── S1.4 (add to scoring)
+S2.4 Sector grouping      ←── S1.5 (group output)
+S2.5 Watchlist integration ←── S1.5 + P1.3 (needs watcher state)
+```
+
+---
+
+### Technical Considerations
+
+| Challenge | Solution |
+|---|---|
+| **800+ stocks × yfinance rate limit** | Batch requests, add delay between batches, use caching |
+| **Data freshness** | Cache TTL: 5 min for prices, 1 day for stock list |
+| **Performance** | Parallel fetch with asyncio/threading, show progress bar |
+| **False positives** | Scoring weights can be tuned, track accuracy over time |
+| **Penny stocks** | Filter by minimum price (default: Rp 50) |
+
+---
+
+### Acceptance Criteria
+
+- [ ] `uv run stock-check --screener` scans all IDX stocks
+- [ ] Results sorted by score (highest first)
+- [ ] Each stock shows: Ticker, Price, Change, RSI, MACD, Score, Signal
+- [ ] Signal thresholds: STRONG BUY (80+), BUY (65-79), WATCH (50-64), AVOID (<50)
+- [ ] Filters: --min-volume, --min-price, --top N
+- [ ] Progress indicator during scan
+- [ ] Completes in < 3 minutes for full IDX
+- [ ] JSON/CSV output supported
+- [ ] Handles network errors gracefully (skips failed stocks)
+
+---
+
+*Last updated: 2026-07-23*

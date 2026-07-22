@@ -49,3 +49,12 @@ alerts:
   volume_spike: true             # Alert on volume spike detection
   volume_spike_window: 20        # Rolling window for avg volume (candles)
   volume_spike_multiplier: 2.0   # Spike threshold (current > avg * this)
+
+recommend:
+  enabled: true                  # Enable daily recommendations
+  min_score: 60.0               # Minimum score (60 = BUY threshold)
+  top_n: 10                     # Max recommendations to return
+  schedule_time: "18:00"        # WIB time to send (after market close)
+  sector: null                  # null = all sectors, or "finance_banking"
+  min_volume: 1000000           # Min avg daily volume (IDR)
+  min_price: 50.0               # Min stock price (IDR)

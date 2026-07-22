@@ -77,12 +77,26 @@ class WatchConfig:
 
 
 @dataclass
+class RecommendConfig:
+    """Daily recommendation configuration."""
+
+    enabled: bool = True
+    min_score: float = 60.0
+    top_n: int = 10
+    schedule_time: str = "18:00"
+    sector: str | None = None
+    min_volume: float = 1_000_000
+    min_price: float = 50.0
+
+
+@dataclass
 class AppConfig:
     """Top-level application configuration."""
 
     watch: WatchConfig = field(default_factory=WatchConfig)
     telegram: TelegramConfig = field(default_factory=TelegramConfig)
     alerts: AlertConfig = field(default_factory=AlertConfig)
+    recommend: RecommendConfig = field(default_factory=RecommendConfig)
 
 
 def _env_or_val(value: str, env_var: str) -> str:
@@ -167,4 +181,16 @@ def load_config(path: str = "config.yaml") -> AppConfig:
         volume_spike_multiplier=float(alerts_raw.get("volume_spike_multiplier", 2.0)),
     )
 
-    return AppConfig(watch=watch, telegram=telegram, alerts=alerts)
+    # ── Recommend section ────────────────────────────────────────────────
+    recommend_raw = raw.get("recommend", {})
+    recommend = RecommendConfig(
+        enabled=bool(recommend_raw.get("enabled", True)),
+        min_score=float(recommend_raw.get("min_score", 60.0)),
+        top_n=int(recommend_raw.get("top_n", 10)),
+        schedule_time=str(recommend_raw.get("schedule_time", "18:00")),
+        sector=recommend_raw.get("sector"),
+        min_volume=float(recommend_raw.get("min_volume", 1_000_000)),
+        min_price=float(recommend_raw.get("min_price", 50.0)),
+    )
+
+    return AppConfig(watch=watch, telegram=telegram, alerts=alerts, recommend=recommend)
