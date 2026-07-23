@@ -7,7 +7,9 @@ and filtering. Based on IDX listing data as of July 2026.
 
 from __future__ import annotations
 
-# ── Finance / Banking ──────────────────────────────────────────────────────
+from dataclasses import dataclass
+
+# ── Finance / Banking ──────────────────────────────────────────────────────────
 FINANCE_BANKING: list[str] = [
     "AGRO",   # Bank Raya Indonesia
     "AGRS",   # Bank IBK Indonesia
@@ -61,7 +63,7 @@ FINANCE_BANKING: list[str] = [
     "BANK",   # Bank Aladin Syariah
 ]
 
-# ── Finance / Insurance ────────────────────────────────────────────────────
+# ── Finance / Insurance ──────────────────────────────────────────────────────────
 FINANCE_INSURANCE: list[str] = [
     "ABDA",   # Asuransi Bina Dana Arta
     "AHAP",   # Asuransi Harta Aman Pratama
@@ -154,7 +156,7 @@ MINING_COAL: list[str] = [
     "MBMA",   # Merdeka Battery Materials
 ]
 
-# ── Consumer Goods / Food & Beverage ──────────────────────────────────────
+# ── Consumer / Food & Beverage ──────────────────────────────────────────────────────────
 CONSUMER_FOOD: list[str] = [
     "ADES",   # Akasha Wira International
     "AISA",   # FKS Food Sejahtera
@@ -204,25 +206,21 @@ CONSUMER_FOOD: list[str] = [
     "WMUU",   # Widodo Makmur Unggas
     "WIIM",   # Wismilak Inti Makmur
     "YUPI",   # Yupi Indo Jelly Gum
-    "COCO",   # Wahana Interfood Nusantara
     "PDPP",   # Primadaya Plastisindo
 ]
 
-# ── Consumer Goods / Tobacco ──────────────────────────────────────────────
+# ── Consumer / Tobacco ──────────────────────────────────────────────────────────
 CONSUMER_TOBACCO: list[str] = [
     "GGRM",   # Gudang Garam
     "HMSP",   # Hanjaya Mandala Sampoerna
     "ITIC",   # Indonesian Tobacco
-    "WIIM",   # Wismilak Inti Makmur
 ]
 
-# ── Consumer Goods / Household & Personal Care ─────────────────────────────
+# ── Consumer / Household ──────────────────────────────────────────────────────────
 CONSUMER_HOUSEHOLD: list[str] = [
-    "ADES",   # Akasha Wira International
     "DVLA",   # Darya-Varia Laboratoria
     "KAEF",   # Kimia Farma
     "KIAS",   # Keramika Indonesia Assosiasi
-    "KINO",   # Kino Indonesia
     "MBTO",   # Martina Berto
     "MERK",   # Merck Indonesia
     "MRAT",   # Mustika Ratu
@@ -235,7 +233,7 @@ CONSUMER_HOUSEHOLD: list[str] = [
     "IKPM",   # Ikapharmindo Putramas
 ]
 
-# ── Infrastructure / Telecommunications ───────────────────────────────────
+# ── Infrastructure ──────────────────────────────────────────────────────────
 INFRASTRUCTURE: list[str] = [
     "ADHI",   # Adhi Karya (Persero)
     "BALI",   # Bali Towerindo Sentra
@@ -247,7 +245,6 @@ INFRASTRUCTURE: list[str] = [
     "ISAT",   # Indosat
     "JSMR",   # Jasa Marga (Persero)
     "LINK",   # Link Net
-    "MORA",   # Mora Telematika Indonesia
     "MTEL",   # Dayamitra Telekomunikasi
     "PGEO",   # Pertamina Geothermal Energy
     "POWR",   # Cikarang Listrindo
@@ -270,28 +267,23 @@ INFRASTRUCTURE: list[str] = [
     "ARKO",   # Arkora Hydro
 ]
 
-# ── Energy / Oil & Gas ────────────────────────────────────────────────────
+# ── Energy ──────────────────────────────────────────────────────────
 ENERGY: list[str] = [
     "APEX",   # Apexindo Pratama Duta
     "ELSA",   # Elnusa
-    "ENRG",   # Energi Mega Persada
     "ESSA",   # ESSA Industries Indonesia
     "HUMI",   # Humpuss Maritim Internasional
-    "INDY",   # Indika Energy
     "MEDC",   # Medco Energi Internasional
     "PGAS",   # Perusahaan Gas Negara (Persero)
     "RAJA",   # Rukun Raharja
     "RATU",   # Raharja Energi Cepu
     "RUIS",   # Radiant Utama Interinsco
     "SGER",   # Sumber Global Energy
-    "SURE",   # Super Energy
-    "TOBA",   # TBS Energi Utama
     "WOWS",   # Ginting Jaya Energi
-    "ELSA",   # Elnusa
     "OILS",   # Indo Oil Perkasa
 ]
 
-# ── Property / Real Estate ────────────────────────────────────────────────
+# ── Property & Real Estate ──────────────────────────────────────────────────────────
 PROPERTY: list[str] = [
     "APLN",   # Agung Podomoro Land
     "ASRI",   # Alam Sutera Realty
@@ -306,7 +298,6 @@ PROPERTY: list[str] = [
     "CBDK",   # Bangun Kosambi Sukses
     "CITY",   # Natura City Developments
     "CLAY",   # Citra Putra Realty
-    "CMNP",   # Citra Marga Nusaphala Persada
     "CTRA",   # Ciputra Development
     "DART",   # Duta Anggada Realty
     "DILD",   # Intiland Development
@@ -346,13 +337,12 @@ PROPERTY: list[str] = [
     "TARA",   # Agung Semesta Sejahtera
     "TRIN",   # Perintis Triniti Properti
     "URBN",   # Urban Jakarta Propertindo
-    "BUV",    # Bukit Uluwatu Villa (was BUVA)
+    "BUV",   # Bukit Uluwatu Villa (was BUVA)
 ]
 
-# ── Agriculture / Plantations ─────────────────────────────────────────────
+# ── Agriculture ──────────────────────────────────────────────────────────
 AGRICULTURE: list[str] = [
     "AALI",   # Astra Agro Lestari
-    "ADRO",   # Alamtri Resources Indonesia
     "ANJT",   # Austindo Nusantara Jaya
     "BISI",   # BISI International
     "BMSR",   # Bintang Mitra Semestaraya
@@ -380,7 +370,6 @@ AGRICULTURE: list[str] = [
     "SSMS",   # Sawit Sumbermas Sarana
     "STAA",   # Sumber Tani Agung Resources
     "TAPG",   # Triputra Agro Persada
-    "TBLA",   # Tunas Baru Lampung
     "TLDN",   # Teladan Prima Agro
     "UNSP",   # Bakrie Sumatera Plantations
     "SGRO",   # Prime Agri Resources
@@ -389,7 +378,7 @@ AGRICULTURE: list[str] = [
     "ALII",   # Ancara Logistics Indonesia (was agriculture)
 ]
 
-# ── Basic Materials / Chemicals ────────────────────────────────────────────
+# ── Basic Materials ──────────────────────────────────────────────────────────
 BASIC_MATERIALS: list[str] = [
     "INKP",   # Indah Kiat Pulp & Paper
     "AKPI",   # Argha Karya Prima Industry
@@ -402,11 +391,8 @@ BASIC_MATERIALS: list[str] = [
     "BTON",   # Betonjaya Manunggal
     "BRPT",   # Barito Pacific
     "BRNA",   # Berlina
-    "BUDI",   # Budi Starch & Sweetener
     "CAKK",   # Cahayaputra Asa Keramik
     "CCSI",   # Communication Cable Systems Indonesia
-    "CPIN",   # Charoen Pokphand Indonesia
-    "CPRO",   # Central Proteina Prima
     "CTTH",   # Citatah
     "EKAD",   # Ekadharma International
     "EPAC",   # Megalestari Epack Sentosaraya
@@ -424,18 +410,14 @@ BASIC_MATERIALS: list[str] = [
     "ISSP",   # Steel Pipe Industry of Indonesia
     "KBLI",   # KMI Wire and Cable
     "KBLM",   # Kabelindo Murni
-    "KIAS",   # Keramika Indonesia Assosiasi
     "KRAS",   # Krakatau Steel (Persero)
     "LION",   # Lion Metal Works
     "LMSH",   # Lionmesh Prima
-    "LMPI",   # Langgeng Makmur Industri
-    "LTL",    # Lautan Luas
+    "LTL",   # Lautan Luas
     "MLIA",   # Mulia Industrindo
     "MSJA",   # Multi Spunindo Jaya
-    "NIKL",   # Pelat Timah Nusantara
     "PBRX",   # Pan Brothers
     "POLU",   # Golden Flower
-    "POWR",   # Cikarang Listrindo
     "PTSN",   # Sat Nusapersada
     "SCCO",   # Supreme Cable Manufacturing
     "SMCB",   # Solusi Bangun Indonesia
@@ -454,11 +436,10 @@ BASIC_MATERIALS: list[str] = [
     "VOKS",   # Voksel Electric
     "YPAS",   # Yanaprima Hastapersada
     "KBAG",   # Karya Bersama Anugerah
-    "SRSN",   # Indo Acidatama
     "CHEM",   # Chemstar Indonesia
 ]
 
-# ── Industrial / Manufacturing ─────────────────────────────────────────────
+# ── Industrial ──────────────────────────────────────────────────────────
 INDUSTRIAL: list[str] = [
     "ACES",   # Aspirasi Hidup Indonesia (ACE Hardware)
     "ADMG",   # Polychem Indonesia
@@ -472,7 +453,6 @@ INDUSTRIAL: list[str] = [
     "BAUT",   # Mitra Angkasa Sejahtera
     "BIMA",   # Primarindo Asia Infrastructure
     "BRAM",   # Indo Kordsa
-    "BUKK",   # Bukaka Teknik Utama
     "CARS",   # Industri dan Perdagangan Bintraco Dharma
     "DEPO",   # Caturkarda Depo Bangunan
     "DRMA",   # Dharma Polimetal
@@ -481,7 +461,6 @@ INDUSTRIAL: list[str] = [
     "FORU",   # Fortune Indonesia
     "GDYR",   # Goodyear Indonesia
     "GGRP",   # Gunung Raja Paksi
-    "GJTL",   # Gajah Tunggal
     "HEXA",   # Hexindo Adiperkasa
     "IKBI",   # Sumi Indo Kabel
     "IMAS",   # Indomobil Sukses Internasional
@@ -489,51 +468,36 @@ INDUSTRIAL: list[str] = [
     "INTA",   # Intraco Penta
     "JECC",   # Jembo Cable Company
     "JSPT",   # Jakarta Setiabudi Internasional
-    "KBLI",   # KMI Wire and Cable
-    "KBLM",   # Kabelindo Murni
     "KDSI",   # Kedawung Setia Industrial
     "KOBX",   # Kobexindo Tractors
     "KONI",   # Perdana Bangun Pusaka
-    "LION",   # Lion Metal Works
-    "LMSH",   # Lionmesh Prima
     "LPIN",   # Multi Prima Sejahtera
     "MARK",   # Mark Dynamics Indonesia
     "PACK",   # Abadi Nusantara Hijau Investama
     "PJHB",   # Pelayaran Jaya Hidup Baru
     "PJAA",   # Pembangunan Jaya Ancol
-    "LMPI",   # Langgeng Makmur Industri
     "PRIM",   # Royal Prima
     "PTPW",   # Pratama Widya
     "RELI",   # Reliance Sekuritas Indonesia
     "SAPX",   # Satria Antaran Prima
-    "SCCO",   # Supreme Cable Manufacturing
-    "SMCB",   # Solusi Bangun Indonesia
-    "SMGR",   # Semen Indonesia
     "SMSM",   # Selamat Sempurna
     "SOSS",   # Shield On Service
     "STAR",   # Buana Artha Anugerah
-    "TIRA",   # Tira Austenite
     "TRIS",   # Trisula International
-    "UNIC",   # Unggul Indah Cahaya
     "UNIT",   # Nusantara Pelabuhan Handal (was UNIT)
-    "VOKS",   # Voksel Electric
     "WICO",   # Wicaksana Overseas International
     "WOOD",   # Integra Indocabinet
-    "TRIS",   # Trisula Textile Industries
     "BELL",   # Trisula Textile Industries
     "SSTM",   # Sunson Textile Manufacturer
     "HADE",   # Himalaya Energi Perkasa
     "KREN",   # Quantum Clovera Investama
     "TRUS",   # Trust Finance Indonesia
     "KBLV",   # First Media
-    "ARNA",   # Arwana Citramulia
     "TOTO",   # Surya Toto Indonesia
     "CTBN",   # Citra Tubindo
-    "AMFG",   # Asahimas Flat Glass
-    "MLBI",   # Multi Bintang Indonesia
 ]
 
-# ── Trade / Services ──────────────────────────────────────────────────────
+# ── Trade & Services ──────────────────────────────────────────────────────────
 TRADE_SERVICES: list[str] = [
     "AKRA",   # AKR Corporindo
     "AMRT",   # Sumber Alfaria Trijaya (Alfamart)
@@ -558,7 +522,6 @@ TRADE_SERVICES: list[str] = [
     "MAPA",   # Map Aktif Adiperkasa
     "MAPB",   # Map Boga Adiperkasa
     "MAPI",   # Mitra Adiperkasa
-    "MEGA",   # Bank Mega
     "MIDI",   # Midi Utama Indonesia (Alfamidi)
     "MLPT",   # Multipolar Technology
     "MPMX",   # Mitra Pinasthika Mustika
@@ -566,22 +529,16 @@ TRADE_SERVICES: list[str] = [
     "MTDL",   # Metrodata Electronics
     "PADI",   # Minna Padi Investama Sekuritas
     "RALS",   # Ramayana Lestari Sentosa
-    "RANC",   # Supra Boga Lestari
     "RISE",   # Jaya Sukses Makmur Sentosa
     "SONA",   # Sona Topas Tourism Industry
     "SUPR",   # Solusi Tunas Pratama
     "TELE",   # Omni Inovasi Indonesia
-    "TSPC",   # Tempo Scan Pacific
     "UNTR",   # United Tractors
-    "WICO",   # Wicaksana Overseas International
     "YULE",   # Yulie Sekuritas Indonesia
     "ZONE",   # Mega Perintis
-    "ASGR",   # Astra Graphia
-    "SOSS",   # Shield On Service
-    "PANS",   # Panin Sekuritas
 ]
 
-# ── Technology / Media ────────────────────────────────────────────────────
+# ── Technology ──────────────────────────────────────────────────────────
 TECHNOLOGY: list[str] = [
     "ATIC",   # Anabatic Technologies
     "BUKA",   # Bukalapak.com
@@ -592,15 +549,12 @@ TECHNOLOGY: list[str] = [
     "DMMX",   # Digital Mediatama Maxima
     "EDGE",   # Indointernet
     "ELIT",   # Data Sinergitama Jaya
-    "EMTK",   # Elang Mahkota Teknologi
     "ENZO",   # Morenzo Abadi Perkasa
     "FILM",   # MD Entertainment
-    "FORU",   # Fortune Indonesia
     "GOTO",   # GoTo Gojek Tokopedia
     "HDIT",   # Hensel Davest Indonesia
     "INET",   # Sinergi Inti Andalan Prima
     "IPTV",   # MNC Vision Networks
-    "ITMA",   # Sumber Energi Andalan
     "KIOS",   # Kioson Komersial Indonesia
     "LUCK",   # Sentral Mitra Informatika
     "LUCY",   # Lima Dua Lima Tiga
@@ -608,22 +562,18 @@ TECHNOLOGY: list[str] = [
     "MCAS",   # M Cash Integrasi
     "MDIA",   # Intermedia Capital
     "MGNA",   # Magna Investama Mandiri
-    "MLPT",   # Multipolar Technology
     "MNCN",   # Media Nusantara Citra
     "MSIN",   # MNC Digital Entertainment
     "MSKY",   # MNC Sky Vision
     "MSTI",   # Mastersystem Infotama
-    "MTDL",   # Metrodata Electronics
     "MTPS",   # Meta Epsi
     "NETV",   # MDTV Media Technologies
     "NFCX",   # NFC Indonesia
-    "PTSN",   # Sat Nusapersada
     "RAAM",   # Tripar Multivision Plus
     "SCMA",   # Surya Citra Media
     "SEMA",   # Semacom Integrated
     "SILO",   # Siloam International Hospitals
     "SINI",   # Singaraja Putra
-    "TELE",   # Omni Inovasi Indonesia
     "TFAS",   # Telefast Indonesia
     "TOSK",   # Topindo Solusi Komunika
     "TRON",   # Teknologi Karya Digital Nusa
@@ -638,19 +588,15 @@ TECHNOLOGY: list[str] = [
     "RUNS",   # Global Sukses Solusi
 ]
 
-# ── Healthcare ─────────────────────────────────────────────────────────────
+# ── Healthcare ──────────────────────────────────────────────────────────
 HEALTHCARE: list[str] = [
     "BMHS",   # Bundamedik
     "CARE",   # Metro Healthcare Indonesia
-    "CLEO",   # Sariguna Primatirta
     "DGNS",   # Diagnos Laboratorium Utama
     "EMMI",   # Esa Medika Mandiri
     "HEAL",   # Medikaloka Hermina
-    "IKPM",   # Ikapharmindo Putramas
     "INAF",   # Indofarma
     "KLBF",   # Kalbe Farma
-    "KAEF",   # Kimia Farma
-    "MERK",   # Merck Indonesia
     "MIKA",   # Mitra Keluarga Karyasehat
     "MMIX",   # Multi Medika Internasional
     "MTMH",   # Murni Sadar
@@ -662,9 +608,7 @@ HEALTHCARE: list[str] = [
     "RSGK",   # Kedoya Adyaraya
     "RSCH",   # Charlie Hospital Semarang
     "SAME",   # Sarana Meditama Metropolitan
-    "SILO",   # Siloam International Hospitals
     "SOHO",   # Soho Global Health
-    "LIFE",   # MSIG Life Insurance Indonesia
     "SRAJ",   # Sejahteraraya Anugrahjaya
     "LABS",   # UBC Medical Indonesia
     "OBAT",   # Brigit Biofarmaka Technologi
@@ -673,15 +617,13 @@ HEALTHCARE: list[str] = [
     "MEDS",   # Hetzer Medical Indonesia
 ]
 
-# ── Transportation / Logistics ─────────────────────────────────────────────
+# ── Transportation & Logistics ──────────────────────────────────────────────────────────
 TRANSPORTATION: list[str] = [
     "BBRM",   # Pelayaran Nasional Bina Buana Raya
-    "BIRD",   # Blue Bird
     "BLTA",   # Berlian Laju Tanker
     "BOAT",   # Newport Marine Services
     "BPTR",   # Batavia Prosperindo Trans
     "BSML",   # Bintang Samudera Mandiri Lines
-    "BULL",   # Buana Lintas Lautan
     "CMPP",   # AirAsia Indonesia
     "ELPI",   # Pelayaran Nasional Ekalya Purnamasari
     "GMFI",   # Garuda Maintenance Facility Aero Asia
@@ -689,12 +631,10 @@ TRANSPORTATION: list[str] = [
     "HAIS",   # Hasnur Internasional Shipping
     "HATM",   # Habco Trans Maritima
     "HITS",   # Humpuss Intermoda Transportasi
-    "HUMI",   # Humpuss Maritim Internasional
     "IPCC",   # Indonesia Kendaraan Terminal
     "IPCM",   # Jasa Armada Indonesia
     "JAYA",   # Armada Berjaya Trans
     "KARW",   # Meratus Jasa Prima
-    "KIJA",   # Kawasan Industri Jababeka
     "LRNA",   # Eka Sari Lorena Transport
     "MBSS",   # Mitrabahtera Segara Sejati
     "MIRA",   # Mitra International Resources
@@ -714,9 +654,7 @@ TRANSPORTATION: list[str] = [
     "TRJA",   # Transkon Jaya
     "WINS",   # Wintermar Offshore Marine
     "WEHA",   # WEHA Transportasi Indonesia
-    "PJHB",   # Pelayaran Jaya Hidup Baru
     "LEAD",   # Logindo Samudramakmur
-    "BOLT",   # Garuda Metalindo
     "DPNS",   # Duta Pertiwi Nusantara
     "KJEN",   # Krida Jaringan Nusantara
     "SBMA",   # Surya Biru Murni Acetylene
@@ -726,68 +664,40 @@ TRANSPORTATION: list[str] = [
     "LAJU",   # Jasa Berdikari Logistics
 ]
 
-# ── Hotels / Tourism / Entertainment ──────────────────────────────────────
+# ── Hotels & Tourism ──────────────────────────────────────────────────────────
 HOTELS_TOURISM: list[str] = [
     "BAYU",   # Bayu Buana
-    "BOLT",   # Garuda Metalindo
     "BOLA",   # Bali Bintang Sejahtera
     "EAST",   # Eastparc Hotel
     "FITT",   # Hotel Fitra International
-    "GMTD",   # Gowa Makassar Tourism Development
     "GOLF",   # Intra Golflink Resorts
     "HILL",   # Hillcon
     "HOMI",   # Grand House Mulia
     "HOTL",   # Saraswanti Indoland Development
     "ICON",   # Island Concepts Indonesia
-    "INPP",   # Indonesian Paradise Property
     "JIHD",   # Jakarta International Hotels & Development
-    "KPIG",   # MNC Land
-    "MARI",   # Mahaka Radio Integra
-    "MINA",   # Sanurhasta Mitra
     "PDES",   # Destinasi Tirta Nusantara
     "PLAN",   # Planet Properindo Jaya
-    "POLI",   # Pollux Hotels Group
     "PSDN",   # Prasidha Aneka Niaga
     "PTSP",   # Pioneerindo Gourmet International
     "PUDP",   # Pudjiadi Prestige
     "SHID",   # Hotel Sahid Jaya International
     "SNLK",   # Sunter Lakeside Hotel
-    "SONA",   # Sona Topas Tourism Industry
     "CSIS",   # Cahayasakti Investindo Sukses
 ]
 
-# ── Investment Companies ──────────────────────────────────────────────────
+# ── Investment ──────────────────────────────────────────────────────────
 INVESTMENT: list[str] = [
-    "AMMN",   # Amman Mineral Internasional
-    "ARTA",   # Arthavest
-    "BBHI",   # Allo Bank Indonesia
     "BHIT",   # MNC Asia Holding
     "BNBR",   # Bakrie & Brothers
     "BPII",   # Batavia Prosperindo Internasional
-    "BUKK",   # Bukaka Teknik Utama
-    "CITA",   # Cita Mineral Investindo
-    "DNET",   # Indoritel Makmur Internasional
     "DSFI",   # Dharma Samudera Fishing Industries
-    "IATA",   # MNC Energy Investments
-    "LPIN",   # Multi Prima Sejahtera
-    "MAPA",   # Map Aktif Adiperkasa
-    "MAPI",   # Mitra Adiperkasa
-    "MDIA",   # Intermedia Capital
-    "MEGA",   # Bank Mega
-    "MLPL",   # Multipolar
     "MYTX",   # Asia Pacific Investama
-    "PALM",   # Provident Investasi Bersama
-    "PNIN",   # Paninvest
-    "PNLF",   # Panin Financial
     "SMMA",   # Sinar Mas Multiartha
     "SRTG",   # Saratoga Investama Sedaya
-    "SUPR",   # Solusi Tunas Pratama
-    "TRIM",   # Trimegah Sekuritas Indonesia
-    "UNIT",   # Nusantara Pelabuhan Handal
-    "WIIM",   # Wismilak Inti Makmur
 ]
 
-# ── Miscellaneous / Others ────────────────────────────────────────────────
+# ── Miscellaneous ──────────────────────────────────────────────────────────
 MISCELLANEOUS: list[str] = [
     "ABBA",   # Mahaka Media
     "AGAR",   # Asia Sejahtera Mina
@@ -797,8 +707,6 @@ MISCELLANEOUS: list[str] = [
     "AMAN",   # Makmur Berkah Amanda
     "AMMS",   # Agung Menjangan Mas
     "APII",   # Arita Prima Indonesia
-    "ARTA",   # Arthavest
-    "ARTO",   # Bank Jago
     "ASLI",   # Asri Karya Lestari
     "ASPR",   # Asia Pramulia
     "ATAP",   # Trimitra Prawara Goldland
@@ -806,8 +714,6 @@ MISCELLANEOUS: list[str] = [
     "BABY",   # Multitrend Indo
     "BACH",   # Bach Multi Global
     "BAIK",   # Bersama Mencapai Puncak
-    "BALI",   # Bali Towerindo Sentra
-    "BAPA",   # Bekasi Asri Pemula
     "BAPR",   # Bakrie Pipe Industries
     "BATR",   # Benteng Api Technic
     "BBIA",   # Sumber Mineral Global Abadi
@@ -816,112 +722,71 @@ MISCELLANEOUS: list[str] = [
     "BEBE",   # Berkah Beton Sadaya
     "BIKA",   # Binakarya Jaya Abadi
     "BIKE",   # Sepeda Bersama Indonesia
-    "BIMA",   # Primarindo Asia Infrastructure
     "BINO",   # Perma Plasindo
     "BLES",   # Superior Prima Sukses
     "BLTZ",   # Graha Layar Prima
     "BLUE",   # Berkah Prima Perkasa
     "BMBL",   # Lavender Bina Cendikia
-    "BMSR",   # Bintang Mitra Semestaraya
-    "BOLT",   # Garuda Metalindo
-    "BPFI",   # Woori Finance Indonesia
-    "BPII",   # Batavia Prosperindo Internasional
-    "BPTR",   # Batavia Prosperindo Trans
     "BSBK",   # Wulandari Bangun Laksana
-    "BSML",   # Bintang Samudera Mandiri Lines
-    "BTON",   # Betonjaya Manunggal
     "BUVA",   # Bukit Uluwatu Villa
     "CASH",   # Cashlez Worldwide Indonesia
     "CBPE",   # Citra Buana Prasida
     "CBUT",   # Citra Borneo Utama
-    "CCSI",   # Communication Cable Systems Indonesia
     "CEKA",   # Wilmar Cahaya Indonesia
-    "CHEK",   # Diastika Biotekindo
     "CHIP",   # Pelita Teknologi Global
-    "CITY",   # Natura City Developments
     "CNMA",   # Nusantara Sejahtera Raya
     "CNKO",   # Exploitasi Energi Indonesia
-    "COCO",   # Wahana Interfood Nusantara
-    "COAL",   # Black Diamond Resources
-    "CPRO",   # Central Proteina Prima
     "CRAB",   # Toba Surimi Industries
     "CRSN",   # Carsurin
     "CSMI",   # Cipta Selera Murni
-    "CYBR",   # ITSEC Asia
     "DADA",   # Diamond Citra Propertindo
     "DAAZ",   # Daaz Bara Lestari
     "DADP",   # Damai Sejahtera Abadi (was UFOE)
     "DATA",   # Remala Abadi
     "DEFI",   # Danasupra Erapacific
     "DEWI",   # Dewi Shri Farmindo
-    "DGNS",   # Diagnos Laboratorium Utama
-    "DIGI",   # Arkadia Digital Media
     "DIVI",   # Distribusi Voucher Nusantara (was DIVA)
-    "DKFT",   # Central Omega Resources
     "DOSS",   # Global Sukses Digital
-    "DPNS",   # Duta Pertiwi Nusantara
     "DWGL",   # Dwi Guna Laksana
     "DYAN",   # Dyandra Media International
     "ECOC",   # Ecocare Indo Pasifik (was HYGN)
     "ELTY",   # Bakrieland Development
     "EMDE",   # Megapolitan Developments
-    "EPAC",   # Megalestari Epack Sentosaraya
     "ERAL",   # Sinar Eka Selaras
-    "ESIP",   # Sinergi Inti Plastindo
     "ESTA",   # Esta Multi Usaha
-    "ESTI",   # Ever Shine Tex
     "EURO",   # Estee Gold Feet
     "FIMP",   # Fimperkasa Utama
     "FLMC",   # Falmaco Nonwoven Industri
     "FOLK",   # Multi Garam Utama
-    "FORU",   # Fortune Indonesia
     "FWCT",   # Wijaya Cahaya Timber
-    "GAMA",   # Gading Development
     "GEMA",   # Gema Grahasarana
-    "GEMS",   # Golden Energy Mines
     "GLOB",   # Globe Kita Terang
     "GOLD",   # Visi Telekomunikasi Infrastruktur
-    "GOLF",   # Intra Golflink Resorts
-    "GPRA",   # Perdana Gapuraprima
     "GPSO",   # Geoprima Solusi
-    "GULA",   # Aman Agrindo
-    "GUN",    # Gunanusa Eramandiri (was GUNA)
+    "GUN",   # Gunanusa Eramandiri (was GUNA)
     "GWSA",   # Greenwood Sejahtera
-    "HADE",   # Himalaya Energi Perkasa
     "HALO",   # Haloni Jane
     "HBAT",   # Minahasa Membangun Hebat
-    "HDIT",   # Hensel Davest Indonesia
     "HGII",   # Hero Global Investment
-    "HILL",   # Hillcon
-    "HOPE",   # Harapan Duta Pertiwi
     "HRME",   # Menteng Heritage Realty
     "HYGN",   # Ecocare Indo Pasifik
     "IBFN",   # Intan Baru Prana
     "IBOS",   # Indo Boga Sukses
     "IKAN",   # Era Mandiri Cemerlang
-    "IKBI",   # Sumi Indo Kabel
-    "INA",    # Indal Aluminium Industry (was INAI)
-    "INCF",   # Indo Komoditi Korpora
+    "INA",   # Indal Aluminium Industry (was INAI)
     "INDX",   # Tanah Laut
     "INPS",   # Indah Prakasa Sentosa
-    "INTA",   # Intraco Penta
     "INTD",   # Inter Delta
     "IOTF",   # Sumber Sinergi Makmur
     "IPAC",   # Era Graharealty
-    "IPOL",   # Indopoly Swakarsa Industry
     "IRRA",   # Itama Ranoraya
     "IRSX",   # Folago Global Nusantara
     "ISAP",   # Isra Presisi Indonesia
     "ISEA",   # Indo American Seafoods
-    "ITIC",   # Indonesian Tobacco
     "JAST",   # Jasnita Telekomindo
-    "JAWA",   # Jaya Agra Wattie
     "JECX",   # Nitrasanata Dharma
-    "JECC",   # Jembo Cable Company
     "JELI",   # Niramas Utama
     "JGLE",   # Graha Andrasentra Propertindo
-    "KBLV",   # First Media
-    "KBLM",   # Kabelindo Murni
     "KDTN",   # Puri Sentul Permai
     "KETR",   # Ketrosden Triasmitra
     "KING",   # Hoffmen Cleanindo
@@ -929,11 +794,9 @@ MISCELLANEOUS: list[str] = [
     "KLIN",   # Klinko Karya Imaji
     "KMDS",   # Kurniamitra Duta Sentosa
     "KMTR",   # Kirana Megatara
-    "KOBX",   # Kobexindo Tractors
     "KOCE",   # Kokoh Exa Nusantara (was KOCI)
     "KOIN",   # Kokoh Inti Arebama
     "KOKA",   # Koka Indonesia
-    "KOTA",   # DMS Propertindo
     "KRYA",   # Bangun Karya Perkasa Jaya
     "KSIX",   # Kentanix Supra International
     "KUAS",   # Ace Oldfields
@@ -943,36 +806,28 @@ MISCELLANEOUS: list[str] = [
     "LMAX",   # Lupromax Pelumas Indonesia
     "LOPI",   # Logisticsplus International
     "LPPS",   # Lenox Pasifik Investama
-    "LRNA",   # Eka Sari Lorena Transport
     "MANG",   # Manggung Polahraya
-    "MASB",   # Bank Multiarta Sentosa
     "MAXI",   # Maxindo Karya Anugerah
     "MDRN",   # Modern Internasional
     "MDKI",   # Emdeki Utama
-    "MDLN",   # Modernland Realty
     "MDPL",   # Mega Manunggal Property (was MMLP)
     "MEJA",   # Harta Djaya Karya
     "MENN",   # Menn Teknologi Indonesia
     "MERE",   # Merry Riana Edukasi
     "MFMI",   # Multifiling Mitra Indonesia
-    "MIRA",   # Mitra International Resources
     "MITI",   # Mitra Investindo
-    "MKN",    # Mitra Komunikasi Nusantara
+    "MKN",   # Mitra Komunikasi Nusantara
     "MKTR",   # Menthobi Karyatama Raya
     "MOLI",   # Madusari Murni Indah
-    "MPOW",   # Megapower Makmur
     "MPXL",   # MPX Logistics International
     "MTFN",   # Capitalinc Investment
-    "MTPS",   # Meta Epsi
     "MTSM",   # Metro Realty
     "MUTU",   # Mutuagung Lestari
-    "MYTX",   # Asia Pacific Investama
     "NAIK",   # Adiwarna Anugerah Abadi
     "NANO",   # Nanotech Indonesia Global
     "NASA",   # Andalan Perkasa Abadi
     "NASI",   # Wahana Inti Makmur
     "NATO",   # Olympus Strategic Indonesia
-    "NETV",   # MDTV Media Technologies
     "NICE",   # Adhi Kartiko Pratama
     "NINE",   # Techno9 Indonesia
     "NPGF",   # Nusa Palapa Gemilang
@@ -981,36 +836,26 @@ MISCELLANEOUS: list[str] = [
     "OBMD",   # OBM Drilchem
     "OKAS",   # Ancora Indonesia Resources
     "OLIV",   # Oscar Mitra Sukses Sejahtera
-    "OMRE",   # Indonesia Prima Property
     "OPMS",   # Optima Prima Metal Sinergi
     "PADA",   # Personel Alih Daya
-    "PADI",   # Minna Padi Investama Sekuritas
     "PAMG",   # Bima Sakti Pertiwi
-    "PBSA",   # Paramita Bangun Sarana
     "PCAR",   # Prima Cakrawala Abadi
-    "PEHA",   # Phapros
-    "PGJO",   # Bahtera Bumi Raya
     "PGLI",   # Pembangunan Graha Lestari Indah
     "PICO",   # Pelangi Indah Canindo
     "PIPE",   # Indo Pureco Pratama (was IPPE)
-    "PLAN",   # Planet Properindo Jaya
     "PMMP",   # Panca Mitra Multiperdana
     "PNSE",   # Pudjiadi and Sons
     "POLA",   # Pool Advista Finance
     "POLY",   # Asia Pacific Fibers
     "PPRE",   # PP Presisi
-    "PRIM",   # Royal Prima
     "PTDU",   # Djasa Ubersakti
     "PTIS",   # Indo Straits
     "PTMR",   # Master Print
     "PTMP",   # Mitra Pack
-    "PTPW",   # Pratama Widya
-    "PTSP",   # Pioneerindo Gourmet International
     "PURA",   # Putra Rajawali Kencana
     "PURI",   # Puri Global Sukses
-    "RANC",   # Supra Boga Lestari
-    "RBM",    # Ristia Bintang Mahkotasejati (was RBMS)
-    "RCC",    # Utama Radar Cahaya (was RCCC)
+    "RBM",   # Ristia Bintang Mahkotasejati (was RBMS)
+    "RCC",   # Utama Radar Cahaya (was RCCC)
     "RELF",   # Graha Mitra Asia
     "RGAS",   # Kian Santang Muliatama
     "RICY",   # Ricky Putra Globalindo
@@ -1019,12 +864,10 @@ MISCELLANEOUS: list[str] = [
     "SAFE",   # Steady Safe
     "SAGE",   # Saptausaha Gemilangindah
     "SAMF",   # Saraswanti Anugerah Makmur
-    "SATU",   # Kota Satu Properti
-    "SBM",    # Surya Biru Murni Acetylene (was SBMA)
+    "SBM",   # Surya Biru Murni Acetylene (was SBMA)
     "SCNP",   # Selaras Citra Nusantara Perkasa
     "SDPC",   # Millennium Pharmacon International
     "SICO",   # Sigma Energy Compressindo
-    "SIMP",   # Salim Ivomas Pratama
     "SKRN",   # Superkrane Mitra Utama
     "SLIS",   # Gaya Abadi Sempurna
     "SLJA",   # SLJ Global (was SULI)
@@ -1037,29 +880,20 @@ MISCELLANEOUS: list[str] = [
     "SOTS",   # Satria Mega Kencana
     "SOUL",   # Mitra Tirta Buwana
     "SPRE",   # Soraya Berjaya Indonesia
-    "SSTM",   # Sunson Textile Manufacturer
     "SUNI",   # Sunindo Pratama
     "SURI",   # Maja Agung Latexindo
     "SWID",   # Saraswanti Indoland Development
     "TAMA",   # Lancartama Sejati
-    "TAMU",   # Pelayaran Tamarin Samudra
-    "TARA",   # Agung Semesta Sejahtera
     "TAYS",   # Jaya Swarasa Agung
     "TEBE",   # Dana Brata Luhur
     "TIRT",   # Tirta Mahakam Resources
-    "TIRA",   # Tira Austenite
     "TNCA",   # Trimuda Nuansa Citra
     "TOOL",   # Rohartindo Nusantara Luas
     "TOPS",   # Totalindo Eka Persada
     "TRGU",   # Cerestar Indonesia
-    "TRIN",   # Perintis Triniti Properti
-    "TRJA",   # Transkon Jaya
-    "TRON",   # Teknologi Karya Digital Nusa
     "TRUE",   # Triniti Dinamik
-    "TRUK",   # Guna Timur Raya
     "UANG",   # Pakuan
     "UFOE",   # Damai Sejahtera Abadi
-    "UNIT",   # Nusantara Pelabuhan Handal
     "UNIQ",   # Ulima Nitra
     "UNTD",   # Terang Dunia Internusa
     "UVCR",   # Trimegah Karya Pratama
@@ -1068,517 +902,60 @@ MISCELLANEOUS: list[str] = [
     "VERN",   # Verona Indah Pictures
     "VIVA",   # Visi Media Asia
     "VRNA",   # Mizuho Leasing Indonesia
-    "WAPO",   # Wahana Pronatural
     "WBSA",   # BSA Logistics Indonesia
-    "WEHA",   # WEHA Transportasi Indonesia
     "WGSH",   # Wira Global Solusi
     "WIDI",   # Widiant Jaya Krenindo
     "WINR",   # Winner Nusantara Jaya
-    "WINS",   # Wintermar Offshore Marine
     "WINE",   # Hatten Bali
-    "WIRG",   # WIR Asia
     "WMPP",   # Widodo Makmur Perkasa
     "WSBP",   # Waskita Beton Precast
     "WTON",   # Wijaya Karya Beton
     "XISI",   # Ciptadana Properti Ritel Indonesia
-    "YELO",   # Yelooo Integra Datanet (formerly YELO)
     "YOUR",   # Roda Vivatex (was RDTX)
     "ZBRA",   # Dosni Roha Indonesia
-    "ZINC",   # Kapuas Prima Coal
-    "ZONE",   # Mega Perintis
-    "ZYRX",   # Zyrexindo Mandiri Buana
     "ABMM",   # ABM Investama
-    "ARKA",   # Arkha Jayanti Persada
-    "BBSS",   # Bumi Benowo Sukses Sejahtera
     "BEER",   # Jobubu Jarum Minahasa
-    "BELL",   # Trisula Textile Industries
     "BESS",   # Batulicin Nusantara Maritim
-    "BIKE",   # Sepeda Bersama Indonesia
-    "BINO",   # Perma Plasindo
-    "BLES",   # Superior Prima Sukses
-    "BMSR",   # Bintang Mitra Semestaraya
-    "BOAT",   # Newport Marine Services
-    "BPFI",   # Woori Finance Indonesia
-    "BPTR",   # Batavia Prosperindo Trans
     "BRRC",   # Raja Roti Cemerlang
-    "BSBK",   # Wulandari Bangun Laksana
-    "BUVA",   # Bukit Uluwatu Villa
-    "CAKK",   # Cahayaputra Asa Keramik
-    "CARS",   # Bintraco Dharma
-    "CASH",   # Cashlez Worldwide Indonesia
-    "CBPE",   # Citra Buana Prasida
     "CGAS",   # Citra Nusantara Gemilang
-    "CHIP",   # Pelita Teknologi Global
-    "CMPP",   # AirAsia Indonesia
-    "CNKO",   # Exploitasi Energi Indonesia
-    "COCO",   # Wahana Interfood Nusantara
-    "CRAB",   # Toba Surimi Industries
-    "CRSN",   # Carsurin
-    "CSMI",   # Cipta Selera Murni
-    "CSIS",   # Cahayasakti Investindo Sukses
-    "DADP",   # Damai Sejahtera Abadi
-    "DATA",   # Remala Abadi
-    "DEFI",   # Danasupra Erapacific
-    "DGNS",   # Diagnos Laboratorium Utama
-    "DKHH",   # Cipta Sarana Medika
-    "DOSS",   # Global Sukses Digital
-    "DPNS",   # Duta Pertiwi Nusantara
-    "DSFI",   # Dharma Samudera Fishing Industries
-    "DWGL",   # Dwi Guna Laksana
-    "DYAN",   # Dyandra Media International
-    "ECII",   # Electronic City Indonesia
-    "ELIT",   # Data Sinergitama Jaya
-    "EMDE",   # Megapolitan Developments
-    "ENZO",   # Morenzo Abadi Perkasa
-    "ERAL",   # Sinar Eka Selaras
-    "ESIP",   # Sinergi Inti Plastindo
-    "ESTA",   # Esta Multi Usaha
-    "EURO",   # Estee Gold Feet
-    "FIMP",   # Fimperkasa Utama
-    "FIRE",   # Alfa Energi Investama
-    "FLMC",   # Falmaco Nonwoven Industri
-    "FOLK",   # Multi Garam Utama
-    "FORU",   # Fortune Indonesia
-    "FWCT",   # Wijaya Cahaya Timber
-    "GLOB",   # Globe Kita Terang
-    "GOLD",   # Visi Telekomunikasi Infrastruktur
-    "GPSO",   # Geoprima Solusi
     "GTBO",   # Garda Tujuh Buana
     "GTRA",   # Grahaprima Suksesmandiri
-    "GULA",   # Aman Agrindo
-    "GWSA",   # Greenwood Sejahtera
-    "HALO",   # Haloni Jane
-    "HBAT",   # Minahasa Membangun Hebat
-    "HDIT",   # Hensel Davest Indonesia
-    "HGII",   # Hero Global Investment
-    "HILL",   # Hillcon
-    "HRME",   # Menteng Heritage Realty
-    "IBFN",   # Intan Baru Prana
-    "IBOS",   # Indo Boga Sukses
-    "IKAN",   # Era Mandiri Cemerlang
-    "INCF",   # Indo Komoditi Korpora
-    "INDX",   # Tanah Laut
-    "INOV",   # Inocycle Technology Group
-    "INPS",   # Indah Prakasa Sentosa
-    "INTD",   # Inter Delta
-    "IOTF",   # Sumber Sinergi Makmur
-    "IPAC",   # Era Graharealty
-    "IRRA",   # Itama Ranoraya
-    "ISAP",   # Isra Presisi Indonesia
-    "ISEA",   # Indo American Seafoods
-    "JAST",   # Jasnita Telekomindo
-    "JAYA",   # Armada Berjaya Trans
     "JEJE",   # Jaya Swarasa Agung (was JEJE)
-    "JELI",   # Niramas Utama
-    "JGLE",   # Graha Andrasentra Propertindo
-    "KARW",   # Meratus Jasa Prima
-    "KBAG",   # Karya Bersama Anugerah
-    "KBLV",   # First Media
-    "KDTN",   # Puri Sentul Permai
-    "KETR",   # Ketrosden Triasmitra
-    "KIOS",   # Kioson Komersial Indonesia
-    "KLAS",   # Pelayaran Kurnia Lautan Semesta
-    "KLIN",   # Klinko Karya Imaji
-    "KMDS",   # Kurniamitra Duta Sentosa
-    "KMTR",   # Kirana Megatara
-    "KOBX",   # Kobexindo Tractors
-    "KOIN",   # Kokoh Inti Arebama
-    "KOKA",   # Koka Indonesia
-    "KOPI",   # Mitra Energi Persada
-    "KREN",   # Quantum Clovera Investama
-    "KRYA",   # Bangun Karya Perkasa Jaya
-    "KSIX",   # Kentanix Supra International
-    "KUAS",   # Ace Oldfields
-    "LAPD",   # Leyand International
-    "LCKM",   # LCK Global Kedaton
-    "LEAD",   # Logindo Samudramakmur
-    "LFLP",   # Imago Mulia Persada
-    "LMAX",   # Lupromax Pelumas Indonesia
-    "LOPI",   # Logisticsplus International
-    "LPPS",   # Lenox Pasifik Investama
-    "MANG",   # Manggung Polahraya
-    "MAXI",   # Maxindo Karya Anugerah
-    "MDKI",   # Emdeki Utama
-    "MDRN",   # Modern Internasional
-    "MEJA",   # Harta Djaya Karya
-    "MENN",   # Menn Teknologi Indonesia
     "MGLV",   # Panca Anugerah Wisesa
-    "MIRA",   # Mitra International Resources
-    "MITI",   # Mitra Investindo
-    "MKTR",   # Menthobi Karyatama Raya
-    "MOLI",   # Madusari Murni Indah
     "MPIX",   # Mitra Pedagang Indonesia
-    "MPOW",   # Megapower Makmur
-    "MPXL",   # MPX Logistics International
     "MSIE",   # Multisarana Intan Eduka
-    "MTPS",   # Meta Epsi
-    "MTSM",   # Metro Realty
-    "MUTU",   # Mutuagung Lestari
-    "NAIK",   # Adiwarna Anugerah Abadi
-    "NANO",   # Nanotech Indonesia Global
-    "NASA",   # Andalan Perkasa Abadi
-    "NASI",   # Wahana Inti Makmur
-    "NINE",   # Techno9 Indonesia
-    "NPGF",   # Nusa Palapa Gemilang
-    "NTBK",   # Nusatama Berkah
-    "NZIA",   # Nusantara Almazia
-    "OBMD",   # OBM Drilchem
-    "OILS",   # Indo Oil Perkasa
-    "OKAS",   # Ancora Indonesia Resources
-    "OLIV",   # Oscar Mitra Sukses Sejahtera
-    "OPMS",   # Optima Prima Metal Sinergi
-    "PADA",   # Personel Alih Daya
-    "PAMG",   # Bima Sakti Pertiwi
-    "PBSA",   # Paramita Bangun Sarana
-    "PCAR",   # Prima Cakrawala Abadi
-    "PDPP",   # Primadaya Plastisindo
     "PEGE",   # Panca Global Kapital
-    "PGJO",   # Bahtera Bumi Raya
-    "PGLI",   # Pembangunan Graha Lestari Indah
-    "PICO",   # Pelangi Indah Canindo
-    "PIPE",   # Indo Pureco Pratama
     "PKPK",   # Paragon Karya Perkasa
-    "PLAN",   # Planet Properindo Jaya
-    "PMMP",   # Panca Mitra Multiperdana
-    "POLY",   # Asia Pacific Fibers
     "PPRI",   # Paperocks Indonesia
-    "PRIM",   # Royal Prima
-    "PTMP",   # Mitra Pack
-    "PTPW",   # Pratama Widya
-    "PTSN",   # Sat Nusapersada
-    "PURA",   # Putra Rajawali Kencana
-    "PURI",   # Puri Global Sukses
-    "PZZA",   # Sarimelati Kencana
-    "RBM",    # Ristia Bintang Mahkotasejati
-    "RCC",    # Utama Radar Cahaya
-    "REAL",   # Repower Asia Indonesia
-    "RELF",   # Graha Mitra Asia
-    "RGAS",   # Kian Santang Muliatama
-    "RICY",   # Ricky Putra Globalindo
-    "RMKO",   # Royaltama Mulia Kontraktorindo
-    "RODA",   # Pikko Land Development
-    "RONY",   # Aesler Grup Internasional
-    "SAGE",   # Saptausaha Gemilangindah
-    "SAPX",   # Satria Antaran Prima
-    "SATU",   # Kota Satu Properti
-    "SCNP",   # Selaras Citra Nusantara Perkasa
-    "SDPC",   # Millennium Pharmacon International
-    "SICO",   # Sigma Energy Compressindo
-    "SKRN",   # Superkrane Mitra Utama
-    "SLIS",   # Gaya Abadi Sempurna
-    "SMIL",   # Sarana Mitra Luas
-    "SMKM",   # Sumber Mas Konstruksi
-    "SMLE",   # Sinergi Multi Lestarindo
-    "SNLK",   # Sunter Lakeside Hotel
-    "SOSS",   # Shield On Service
-    "SOTS",   # Satria Mega Kencana
-    "SOUL",   # Mitra Tirta Buwana
-    "SPRE",   # Soraya Berjaya Indonesia
-    "SSTM",   # Sunson Textile Manufacturer
-    "SUNI",   # Sunindo Pratama
-    "SURI",   # Maja Agung Latexindo
     "SWAT",   # Sriwahana Adityakarta
-    "SWID",   # Saraswanti Indoland Development
-    "TARA",   # Agung Semesta Sejahtera
-    "TAYS",   # Jaya Swarasa Agung
-    "TEBE",   # Dana Brata Luhur
-    "TFAS",   # Telefast Indonesia
     "TGUK",   # Platinum Wahab Nusantara
-    "TIRT",   # Tirta Mahakam Resources
-    "TNCA",   # Trimuda Nuansa Citra
-    "TOOL",   # Rohartindo Nusantara Luas
-    "TOPS",   # Totalindo Eka Persada
-    "TOSK",   # Topindo Solusi Komunika
-    "TRGU",   # Cerestar Indonesia
-    "TRUE",   # Triniti Dinamik
-    "TRUK",   # Guna Timur Raya
-    "UANG",   # Pakuan
-    "UNIQ",   # Ulima Nitra
-    "UNTD",   # Terang Dunia Internusa
-    "UVCR",   # Trimegah Karya Pratama
-    "VAST",   # Vastland Indonesia
-    "VERN",   # Verona Indah Pictures
-    "VIVA",   # Visi Media Asia
-    "VRNA",   # Mizuho Leasing Indonesia
-    "WAPO",   # Wahana Pronatural
-    "WBSA",   # BSA Logistics Indonesia
-    "WGSH",   # Wira Global Solusi
-    "WIDI",   # Widiant Jaya Krenindo
-    "WINE",   # Hatten Bali
-    "WINR",   # Winner Nusantara Jaya
-    "WIRG",   # WIR Asia
-    "WMPP",   # Widodo Makmur Perkasa
-    "WOWS",   # Ginting Jaya Energi
-    "XISI",   # Ciptadana Properti Ritel Indonesia
-    "ZBRA",   # Dosni Roha Indonesia
     "ACRO",   # Samcro Hyosung Adilestari
     "AEGS",   # Anugerah Spareparts Sejahtera
-    "AGAR",   # Asia Sejahtera Mina
     "AKKU",   # Anugerah Kagum Karya Utama
-    "ALKA",   # Alakasa Industrindo
-    "AMIN",   # Ateliers Mecaniques D'Indonesie
-    "APII",   # Arita Prima Indonesia
-    "ASH",    # Cilacap Samudera Fishing Industry (was ASHA)
-    "ASPR",   # Asia Pramulia
-    "ATAP",   # Trimitra Prawara Goldland
-    "ATLA",   # Atlantis Subsea Indonesia
-    "BABY",   # Multitrend Indo
-    "BACH",   # Bach Multi Global
-    "BAPR",   # Bhakti Agung Propertindo
-    "BATR",   # Benteng Api Technic
-    "BAYU",   # Bayu Buana
-    "BDKR",   # Berdikari Pondasi Perkasa
-    "BIKA",   # Binakarya Jaya Abadi
-    "BIMA",   # Primarindo Asia Infrastructure
-    "BIPP",   # Bhuwanatala Indah Permai
-    "BMBL",   # Lavender Bina Cendikia
-    "BNGA",   # Bank CIMB Niaga
-    "BOG",    # Apollo Global Interactive (was BOGA)
-    "BOLA",   # Bali Bintang Sejahtera
-    "BOLT",   # Garuda Metalindo
-    "BPFI",   # Woori Finance Indonesia
-    "BRAM",   # Indo Kordsa
-    "BRNA",   # Berlina
-    "BRPT",   # Barito Pacific
-    "BTEK",   # Bumi Teknokultura Unggul
-    "BULL",   # Buana Lintas Lautan
-    "CAMP",   # Campina Ice Cream Industry
-    "CARS",   # Bintraco Dharma
-    "CBRE",   # Cakra Buana Resources Energi
-    "CHIP",   # Pelita Teknologi Global
-    "CINT",   # Chitose Internasional
+    "ASH",   # Cilacap Samudera Fishing Industry (was ASHA)
+    "BOG",   # Apollo Global Interactive (was BOGA)
     "CLPI",   # Colorpak Indonesia
-    "CMNP",   # Citra Marga Nusaphala Persada
-    "CNMA",   # Nusantara Sejahtera Raya
-    "CSMI",   # Cipta Selera Murni
-    "CTBN",   # Citra Tubindo
-    "DART",   # Duta Anggada Realty
-    "DADA",   # Diamond Citra Propertindo
-    "DADP",   # Damai Sejahtera Abadi
-    "DEWI",   # Dewi Shri Farmindo
     "DFAM",   # Dafam Property Indonesia
-    "DIGI",   # Arkadia Digital Media
-    "DIVA",   # Distribusi Voucher Nusantara
-    "DIVI",   # Distribusi Voucher Nusantara
-    "DKHH",   # Cipta Sarana Medika
-    "DLTA",   # Delta Djakarta
     "DOOH",   # Era Media Sejahtera
-    "DPUM",   # Dua Putra Utama Makmur
-    "ECII",   # Electronic City Indonesia
-    "EKAD",   # Ekadharma International
-    "ELTY",   # Bakrieland Development
-    "EMDE",   # Megapolitan Developments
-    "ENAK",   # Champ Resto Indonesia
-    "ERAL",   # Sinar Eka Selaras
-    "ERTX",   # Eratex Djaja
-    "ESSA",   # ESSA Industries Indonesia
-    "FAST",   # Fast Food Indonesia
-    "FILM",   # MD Entertainment
-    "FITT",   # Hotel Fitra International
-    "FORU",   # Fortune Indonesia
-    "FPNI",   # Lotte Chemical Titan
     "FUJI",   # Fuji Finance Indonesia
-    "FYU",    # Future Energy Global (was FUTR)
-    "GGRP",   # Gunung Raja Paksi
-    "GDYR",   # Goodyear Indonesia
-    "GEMA",   # Gema Grahasarana
-    "GEMS",   # Golden Energy Mines
-    "GHON",   # Gihon Telekomunikasi Indonesia
-    "GLVA",   # Galva Technologies
-    "GMFI",   # Garuda Maintenance Facility Aero Asia
-    "GMTD",   # Gowa Makassar Tourism Development
-    "GOLF",   # Intra Golflink Resorts
-    "GOLL",   # Golden Plantation
-    "GPRA",   # Perdana Gapuraprima
-    "GULA",   # Aman Agrindo
-    "GWSA",   # Greenwood Sejahtera
-    "HDIT",   # Hensel Davest Indonesia
-    "HERO",   # Hero Global Investment
-    "HITS",   # Humpuss Intermoda Transportasi
-    "HOMI",   # Grand House Mulia
-    "HOPE",   # Harapan Duta Pertiwi
-    "HRME",   # Menteng Heritage Realty
-    "HRUM",   # Harum Energy
-    "IBST",   # Inti Bangun Sejahtera
+    "FYU",   # Future Energy Global (was FUTR)
     "IFII",   # Indonesia Fibreboard Industry
     "IFSH",   # Ifishdeco
-    "IKAI",   # Intikeramik Alamasri Industri
-    "IKPM",   # Ikapharmindo Putramas
-    "IMJS",   # Indomobil Multi Jasa
-    "IMPC",   # Impack Pratama Industri
-    "INAF",   # Indofarma
-    "INCI",   # Intanwijaya Internasional
-    "INDS",   # Indospring
-    "INDX",   # Tanah Laut
     "INRD",   # Royalindo Investa Wijaya (was INRO)
-    "INTD",   # Inter Delta
     "INTP",   # Indocement Tunggal Prakarsa
-    "IPCC",   # Indonesia Kendaraan Terminal
-    "IPCM",   # Jasa Armada Indonesia
-    "IPOL",   # Indopoly Swakarsa Industry
-    "IRE",    # Itama Ranoraya (was IRRA)
-    "ISAT",   # Indosat
-    "ITIC",   # Indonesian Tobacco
-    "JECC",   # Jembo Cable Company
-    "JECX",   # Nitrasanata Dharma
-    "JECC",   # Jembo Cable Company
-    "JIHD",   # Jakarta International Hotels & Development
-    "JSMR",   # Jasa Marga (Persero)
-    "KARW",   # Meratus Jasa Prima
-    "KBLV",   # First Media
-    "KDSI",   # Kedawung Setia Industrial
+    "IRE",   # Itama Ranoraya (was IRRA)
     "KKES",   # Kusuma Kemindo Sentosa
-    "KMDS",   # Kurniamitra Duta Sentosa
-    "KOBX",   # Kobexindo Tractors
-    "KOCE",   # Kokoh Exa Nusantara
-    "KOTA",   # DMS Propertindo
-    "KPIG",   # MNC Tourism Indonesia
-    "KREN",   # Quantum Clovera Investama
     "LAPI",   # Logisticsplus International
-    "LAPD",   # Leyand International
-    "LCKM",   # LCK Global Kedaton
-    "LFLP",   # Imago Mulia Persada
-    "LIV",    # Homeco Victoria Makmur (was LIVE)
-    "LRNA",   # Eka Sari Lorena Transport
-    "MANG",   # Manggung Polahraya
-    "MARI",   # Mahaka Radio Integra
-    "MAXI",   # Maxindo Karya Anugerah
-    "MBTO",   # Martina Berto
-    "MCAS",   # M Cash Integrasi
-    "MDIA",   # Intermedia Capital
-    "MDRN",   # Modern Internasional
-    "MDPL",   # Mega Manunggal Property
-    "MENN",   # Menn Teknologi Indonesia
-    "MERE",   # Merry Riana Edukasi
-    "MFMI",   # Multifiling Mitra Indonesia
-    "MIRA",   # Mitra International Resources
-    "MITI",   # Mitra Investindo
-    "MKTR",   # Menthobi Karyatama Raya
-    "MNCN",   # Media Nusantara Citra
-    "MOLI",   # Madusari Murni Indah
-    "MPMX",   # Mitra Pinasthika Mustika
-    "MPPA",   # Matahari Putra Prima
-    "MPRO",   # Maha Properti Indonesia
-    "MSKY",   # MNC Sky Vision
-    "MTDL",   # Metrodata Electronics
-    "MTFN",   # Capitalinc Investment
-    "MTPS",   # Meta Epsi
-    "MTSM",   # Metro Realty
-    "MYTX",   # Asia Pacific Investama
-    "NASI",   # Wahana Inti Makmur
-    "NETV",   # MDTV Media Technologies
-    "NICL",   # PAM Mineral
-    "NIRO",   # City Retail Developments
-    "NPGF",   # Nusa Palapa Gemilang
-    "NTBK",   # Nusatama Berkah
-    "NZIA",   # Nusantara Almazia
-    "OASA",   # Maharaksa Biru Energi
-    "OBMD",   # OBM Drilchem
-    "OKAS",   # Ancora Indonesia Resources
-    "OLIV",   # Oscar Mitra Sukses Sejahtera
-    "OPMS",   # Optima Prima Metal Sinergi
-    "PADI",   # Minna Padi Investama Sekuritas
-    "PAMG",   # Bima Sakti Pertiwi
-    "PBSA",   # Paramita Bangun Sarana
-    "PDPP",   # Primadaya Plastisindo
-    "PEG",    # Panca Global Kapital (was PEGE)
-    "PGJO",   # Bahtera Bumi Raya
-    "PGLI",   # Pembangunan Graha Lestari Indah
-    "PGUN",   # Pradiksi Gunatama
+    "LIV",   # Homeco Victoria Makmur (was LIVE)
+    "PEG",   # Panca Global Kapital (was PEGE)
     "PHAP",   # Phapros (was PEHA)
-    "PLAN",   # Planet Properindo Jaya
-    "PMMP",   # Panca Mitra Multiperdana
-    "PNSE",   # Pudjiadi and Sons
-    "POLA",   # Pool Advista Finance
-    "POLU",   # Golden Flower
-    "PPRI",   # Paperocks Indonesia
-    "PPRO",   # Pembangunan Perumahan Properti
-    "PRIM",   # Royal Prima
-    "PSDN",   # Prasidha Aneka Niaga
-    "PTDU",   # Djasa Ubersakti
-    "PTIS",   # Indo Straits
-    "PTMR",   # Master Print
-    "PTMP",   # Mitra Pack
-    "PTPW",   # Pratama Widya
-    "PTSP",   # Pioneerindo Gourmet International
-    "PUDP",   # Pudjiadi Prestige
-    "PURA",   # Putra Rajawali Kencana
-    "PURI",   # Puri Global Sukses
     "RAFA",   # Sari Kreasi Boga
-    "RANC",   # Supra Boga Lestari
-    "RCC",    # Utama Radar Cahaya
     "RDTX",   # Roda Vivatex
-    "RELI",   # Reliance Sekuritas Indonesia
-    "RGAS",   # Kian Santang Muliatama
-    "RICY",   # Ricky Putra Globalindo
-    "RMKO",   # Royaltama Mulia Kontraktorindo
     "ROCK",   # Rockfields Properti Indonesia
-    "RONY",   # Aesler Grup Internasional
-    "RUNS",   # Global Sukses Solusi
-    "SAFE",   # Steady Safe
-    "SAME",   # Sarana Meditama Metropolitan
-    "SATU",   # Kota Satu Properti
-    "SCNP",   # Selaras Citra Nusantara Perkasa
-    "SEM",    # Semacom Integrated (was SEMA)
+    "SEM",   # Semacom Integrated (was SEMA)
     "SFAN",   # Surya Fajar Capital
-    "SGER",   # Sumber Global Energy
-    "SICO",   # Sigma Energy Compressindo
     "SINO",   # Singaraja Putra (was SINI)
-    "SKRN",   # Superkrane Mitra Utama
-    "SLIS",   # Gaya Abadi Sempurna
-    "SMIL",   # Sarana Mitra Luas
-    "SMKM",   # Sumber Mas Konstruksi
-    "SMLE",   # Sinergi Multi Lestarindo
-    "SNLK",   # Sunter Lakeside Hotel
-    "SOSS",   # Shield On Service
-    "SOTS",   # Satria Mega Kencana
-    "SOUL",   # Mitra Tirta Buwana
-    "SPRE",   # Soraya Berjaya Indonesia
-    "SSTM",   # Sunson Textile Manufacturer
-    "SUNI",   # Sunindo Pratama
-    "SURI",   # Maja Agung Latexindo
-    "SWAT",   # Sriwahana Adityakarta
-    "TAYS",   # Jaya Swarasa Agung
-    "TEBE",   # Dana Brata Luhur
-    "TELE",   # Omni Inovasi Indonesia
-    "TFAS",   # Telefast Indonesia
-    "TGUK",   # Platinum Wahab Nusantara
-    "TIRT",   # Tirta Mahakam Resources
-    "TNCA",   # Trimuda Nuansa Citra
-    "TOOL",   # Rohartindo Nusantara Luas
-    "TOPS",   # Totalindo Eka Persada
-    "TOTL",   # Total Bangun Persada
     "TOTP",   # Surya Toto Indonesia (was TOTO)
-    "TRGU",   # Cerestar Indonesia
-    "TRIN",   # Perintis Triniti Properti
-    "TRON",   # Teknologi Karya Digital Nusa
-    "TRUE",   # Triniti Dinamik
-    "TRUK",   # Guna Timur Raya
-    "UANG",   # Pakuan
-    "UFOE",   # Damai Sejahtera Abadi
-    "UNIQ",   # Ulima Nitra
-    "UNTD",   # Terang Dunia Internusa
-    "URBN",   # Urban Jakarta Propertindo
-    "UVCR",   # Trimegah Karya Pratama
-    "VAST",   # Vastland Indonesia
-    "VENT",   # Venteny Fortuna International
-    "VERN",   # Verona Indah Pictures
-    "VIVA",   # Visi Media Asia
-    "VOKS",   # Voksel Electric
-    "VRNA",   # Mizuho Leasing Indonesia
-    "WAPO",   # Wahana Pronatural
-    "WBSA",   # BSA Logistics Indonesia
-    "WGSH",   # Wira Global Solusi
-    "WIDI",   # Widiant Jaya Krenindo
-    "WINE",   # Hatten Bali
-    "WINR",   # Winner Nusantara Jaya
-    "WMPP",   # Widodo Makmur Perkasa
-    "WOWS",   # Ginting Jaya Energi
-    "WSKT",   # Waskita Karya (Persero)
-    "XISI",   # Ciptadana Properti Ritel Indonesia
-    "YELO",   # Yelooo Integra Datanet
-    "ZINC",   # Kapuas Prima Coal
-    "ZONE",   # Mega Perintis
 ]
 
 # ── Sector Index ──────────────────────────────────────────────────────────
@@ -1605,8 +982,6 @@ IDX_SECTORS: dict[str, list[str]] = {
 }
 
 # ── Flat list of all stocks ───────────────────────────────────────────────
-# Deduplicated tickers from all sectors above.
-# This is the canonical list used for bulk screening.
 IDX_ALL_STOCKS: list[str] = sorted(
     {
         ticker
@@ -1653,3 +1028,179 @@ def get_sector_names() -> list[str]:
 def get_sectors() -> dict[str, list[str]]:
     """Return the complete sector dictionary."""
     return {k: list(v) for k, v in IDX_SECTORS.items()}
+
+
+# ── Sector metadata ────────────────────────────────────────────────────────
+
+
+@dataclass(frozen=True)
+class SectorInfo:
+    """Metadata for an IDX sector."""
+
+    key: str
+    name: str
+    description: str
+    tier: str  # blue_chip, mid_cap, small_cap, micro_cap
+
+
+SECTOR_META: dict[str, SectorInfo] = {
+    "finance_banking": SectorInfo(
+        key="finance_banking",
+        name="Finance / Banking",
+        description="Commercial banks, rural banks, financial institutions",
+        tier="blue_chip",
+    ),
+    "finance_insurance": SectorInfo(
+        key="finance_insurance",
+        name="Finance / Insurance",
+        description="Insurance companies, asset management, securities",
+        tier="mid_cap",
+    ),
+    "mining_coal": SectorInfo(
+        key="mining_coal",
+        name="Mining / Coal",
+        description="Coal mining, metal mining, mineral extraction",
+        tier="blue_chip",
+    ),
+    "consumer_food": SectorInfo(
+        key="consumer_food",
+        name="Consumer / Food & Beverage",
+        description="Food production, beverages, dairy, agriculture processing",
+        tier="blue_chip",
+    ),
+    "consumer_tobacco": SectorInfo(
+        key="consumer_tobacco",
+        name="Consumer / Tobacco",
+        description="Tobacco manufacturing, cigarettes, tobacco products",
+        tier="blue_chip",
+    ),
+    "consumer_household": SectorInfo(
+        key="consumer_household",
+        name="Consumer / Household",
+        description="Household products, personal care, packaging",
+        tier="mid_cap",
+    ),
+    "infrastructure": SectorInfo(
+        key="infrastructure",
+        name="Infrastructure",
+        description="Telecommunications, toll roads, ports, utilities",
+        tier="blue_chip",
+    ),
+    "energy": SectorInfo(
+        key="energy",
+        name="Energy",
+        description="Oil & gas, geothermal, renewable energy",
+        tier="mid_cap",
+    ),
+    "property": SectorInfo(
+        key="property",
+        name="Property & Real Estate",
+        description="Property developers, real estate, construction",
+        tier="mid_cap",
+    ),
+    "agriculture": SectorInfo(
+        key="agriculture",
+        name="Agriculture",
+        description="Plantation, palm oil, rubber, agriculture",
+        tier="mid_cap",
+    ),
+    "basic_materials": SectorInfo(
+        key="basic_materials",
+        name="Basic Materials",
+        description="Chemicals, ceramics, glass, steel, cement",
+        tier="mid_cap",
+    ),
+    "industrial": SectorInfo(
+        key="industrial",
+        name="Industrial",
+        description="Machinery, automotive, electronics, manufacturing",
+        tier="mid_cap",
+    ),
+    "trade_services": SectorInfo(
+        key="trade_services",
+        name="Trade & Services",
+        description="Retail, wholesale, distribution, trading",
+        tier="small_cap",
+    ),
+    "technology": SectorInfo(
+        key="technology",
+        name="Technology",
+        description="Software, IT services, fintech, e-commerce",
+        tier="mid_cap",
+    ),
+    "healthcare": SectorInfo(
+        key="healthcare",
+        name="Healthcare",
+        description="Pharmaceuticals, hospitals, medical devices",
+        tier="mid_cap",
+    ),
+    "transportation": SectorInfo(
+        key="transportation",
+        name="Transportation & Logistics",
+        description="Airlines, shipping, trucking, logistics",
+        tier="mid_cap",
+    ),
+    "hotels_tourism": SectorInfo(
+        key="hotels_tourism",
+        name="Hotels & Tourism",
+        description="Hotels, resorts, tourism, entertainment",
+        tier="small_cap",
+    ),
+    "investment": SectorInfo(
+        key="investment",
+        name="Investment",
+        description="Investment companies, holding companies, venture capital",
+        tier="small_cap",
+    ),
+    "miscellaneous": SectorInfo(
+        key="miscellaneous",
+        name="Miscellaneous",
+        description="Conglomerates, diversified, other sectors",
+        tier="small_cap",
+    ),
+}
+
+
+# ── Reverse lookup: ticker → sector ────────────────────────────────────────
+# Built once at import time for O(1) sector lookups.
+
+TICKER_TO_SECTOR: dict[str, str] = {}
+for _sector, _tickers in IDX_SECTORS.items():
+    for _ticker in _tickers:
+        TICKER_TO_SECTOR[_ticker] = _sector
+
+
+def get_sector_for_ticker(ticker: str) -> str | None:
+    """Return the sector key for a given ticker, or None if not found.
+
+    Example
+    -------
+    >>> get_sector_for_ticker("BBCA")
+    'finance_banking'
+    """
+    return TICKER_TO_SECTOR.get(ticker.upper())
+
+
+def get_sector_info(sector: str) -> SectorInfo | None:
+    """Return metadata for a given sector, or None if unknown."""
+    return SECTOR_META.get(sector)
+
+
+# ── Validation ─────────────────────────────────────────────────────────────
+
+
+def validate_sectors() -> list[str]:
+    """Check for duplicate tickers across sectors. Returns list of warnings."""
+    warnings: list[str] = []
+    seen: dict[str, str] = {}
+
+    for sector, tickers in IDX_SECTORS.items():
+        for ticker in tickers:
+            if ticker in seen:
+                warnings.append(
+                    f"Duplicate ticker '{ticker}' in '{sector}' (first seen in '{seen[ticker]}')"
+                )
+            else:
+                seen[ticker] = sector
+
+    return warnings

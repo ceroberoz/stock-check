@@ -1,259 +1,72 @@
 # IDX Stock Checker
 
-CLI tool to check stock prices from various exchanges (IDX, US) via Yahoo Finance. Includes technical indicators (MA, RSI, MACD), trend signals, DCA analysis, and optional Telegram alerts.
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+CLI tool untuk cek saham Indonesia (IDX) dan US via Yahoo Finance. Termasuk indikator teknikal (MA, RSI, MACD), sinyal trend, analisis DCA, dan Telegram alerts.
+
+## Quick Start
+
+```bash
+# Install
+git clone https://github.com/YOUR_USERNAME/stock-check.git
+cd stock-check
+uv sync
+
+# Cek saham
+uv run stock-check --check BBCA
+
+# Lihat semua saham IDX30
+uv run stock-check --list idx30
+
+# Scan saham potensial
+uv run stock-check --screener
+```
 
 ## Features
 
-- Check individual stocks with `--check BBCA`
-- **Multi-exchange support** — IDX (Indonesia) and US markets
-- View all IDX30 stocks with `--list idx30`
-- Technical indicators: Moving Averages, RSI(14), MACD(12/26/9)
-- Auto `.JK` suffix for Indonesian stocks
-- Rich terminal output with colors
-- JSON and CSV output for scripting (`--format json|csv`)
-- Custom MA periods (`--ma 5,20,50,200`)
-- **DCA (Dollar Cost Averaging) analysis** with technical ranking (`--dca`)
-- Telegram alert bot (watch mode)
-- File-based caching for repeated queries
+| Command | Deskripsi | Contoh |
+|---------|-----------|--------|
+| `--check` | Cek 1 atau lebih saham | `stock-check --check BBCA` |
+| `--list` | List semua saham di indeks | `stock-check --list idx30` |
+| `--screener` | Scan saham potensial 3-5% | `stock-check --screener` |
+| `--recommend` | Rekomendasi harian | `stock-check --recommend` |
+| `--dca` | Analisis DCA | `stock-check --check BBCA,BBRI --dca` |
+| `--watch` | Telegram alerts | `stock-check-watch` |
 
-## Installation
+## Setup
+
+### 1. Install
 
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv/):
 
 ```bash
-# Clone the repository
 git clone https://github.com/YOUR_USERNAME/stock-check.git
 cd stock-check
-
-# Install dependencies
 uv sync
-
-# Run the tool
-uv run stock-check --check BBCA
 ```
 
-## Usage
-
-### Check a Stock (IDX - Default Exchange)
+### 2. Basic Usage
 
 ```bash
+# Cek saham IDX (default)
 uv run stock-check --check BBCA
-```
 
-### Check US Stocks
-
-For US stocks, use `--exchange US`:
-
-```bash
+# Cek saham US
 uv run stock-check --check SCHG --exchange US
-uv run stock-check --check SPY,QQQ --exchange US
-```
 
-**Note:** `--exchange` is required for non-IDX stocks. IDX is the default and doesn't need the flag.
+# Cek multiple saham
+uv run stock-check --check BBCA,BBRI,TLKM
 
-### Available Exchanges
-
-| Exchange | Suffix | Currency | Flag | Example |
-|----------|--------|----------|------|---------|
-| **IDX** (Jakarta) | `.JK` | Rp (IDR) | *(default)* | `--check BBCA` |
-| **US Market** | *(none)* | $ (USD) | `--exchange US` | `--check SCHG --exchange US` |
-
-Output:
-
-```
-╔══════════════════════════════════════════════╗
-║    IDX Stock Checker — Executive Summary     ║
-╠══════════════════════════════════════════════╣
-║  Ticker      : BBCA.JK                       ║
-║  Exchange    : Jakarta Stock Exchange        ║
-║  Date        : 2026-07-10                    ║
-║  Period      : 1 trading day                 ║
-║  Interval    : 1d                            ║
-║──────────────────────────────────────────────║
-║  Last Price  : Rp 6,175                      ║
-║  Change      : -125 (-1.98%)                 ║
-║  Open / High : 6,300 / 6,300                 ║
-║  Low / Close : 6,125 / 6,175                 ║
-║──────────────────────────────────────────────║
-║  Moving Averages (MA)                        ║
-║    MA5  (1w) :    6,195  ▼  bearish          ║
-║    MA9  (2w) :    5,997  ▲  bullish          ║
-║    MA20 (1m) :    6,061  ▲  bullish          ║
-║    MA50 (2.5m) :    5,936  ▲  bullish        ║
-║──────────────────────────────────────────────║
-║  Oscillators                                 ║
-║    RSI(14)     :   54.41  neutral            ║
-║    MACD(12/26/9) :      +34  ▲  bullish      ║
-║──────────────────────────────────────────────║
-║      Signal : BUY  (price above most MAs)    ║
-║       Action : ACCUM  (need MA50 5,936)      ║
-╚══════════════════════════════════════════════╝
-```
-
-### List All IDX30 Stocks
-
-```bash
-uv run stock-check --list idx30
-```
-
-Output:
-
-```
-                              IDX30 Stock Overview                              
-┏━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
-┃ Ticker  ┃  Last Price ┃        Change ┃       RSI ┃ Signal       ┃ Action    ┃
-┡━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
-│ BBCA    │    Rp 6,175 │  -125 (-2.0%) │      54.4 │ BUY          │ ACCUM     │
-│ BBRI    │    Rp 2,790 │    +0 (+0.0%) │      45.9 │ STRONG SELL  │ EXIT      │
-│ TLKM    │    Rp 2,480 │    +0 (+0.0%) │      44.8 │ STRONG SELL  │ EXIT      │
-│ ...     │ ...         │ ...           │ ...       │ ...          │ ...       │
-└─────────┴─────────────┴───────────────┴───────────┴──────────────┴───────────┘
-```
-
-### Check Multiple Stocks
-
-```bash
-uv run stock-check --check BBCA,BBRI,ASII
-```
-
-### Use Different Intervals
-
-```bash
-uv run stock-check --check BBCA --interval 1wk
-uv run stock-check --check BBCA --interval 1h
-```
-
-### Lookback Period
-
-```bash
-uv run stock-check --check BBCA --day 5
-```
-
-### Custom MA Periods
-
-Override the default moving average periods with `--ma`:
-
-```bash
-# Use custom periods (comma-separated)
-uv run stock-check --check BBCA --ma 5,20,50,200
-
-# Combine with interval
-uv run stock-check --check BBCA --interval 1wk --ma 4,12,24
-```
-
-The `--ma` flag overrides the interval-based MA selection, letting you use any periods you want.
-
-### Output Formats
-
-Switch between text, JSON, and CSV output:
-
-```bash
-# Default rich terminal output
-uv run stock-check --check BBCA
-
-# JSON output (for scripting/piping)
+# Format JSON
 uv run stock-check --check BBCA --format json
-
-# CSV output (for spreadsheets)
-uv run stock-check --check BBCA --format csv
-
-# Multiple stocks in CSV
-uv run stock-check --check BBCA,BBRI,ASII --format csv
 ```
 
-**JSON output example:**
-```json
-{
-  "ticker": "BBCA.JK",
-  "exchange": "Jakarta Stock Exchange",
-  "date": "2026-07-11",
-  "price": {
-    "last": 6175.0,
-    "change": -125.0,
-    "change_pct": -1.98
-  },
-  "moving_averages": {
-    "MA5": 6195.0,
-    "MA9": 5997.22,
-    "MA20": 6061.25,
-    "MA50": 5935.5
-  },
-  "signal": {
-    "label": "BUY",
-    "description": "price above most MAs"
-  },
-  "rsi": 54.41,
-  "macd": {
-    "macd": 64.53,
-    "signal": 30.1,
-    "histogram": 34.42
-  }
-}
-```
+### 3. Telegram Setup (opsional)
 
-## DCA (Dollar Cost Averaging) Analysis
-
-Compare multiple stocks and get **weighted allocation** recommendations using technical analysis-based scoring. Instead of picking one stock, the tool distributes your investment across all candidates based on their scores.
-
-### Usage
-
-```bash
-# IDX stocks (default)
-uv run stock-check --check BBCA,BBRI,TLKM --dca --amount 1000000
-
-# US stocks
-uv run stock-check --check SCHG,SPY,QQQ --exchange US --dca --amount 100
-```
-
-### Scoring Factors
-
-| Factor | Weight | What It Measures |
-|--------|--------|------------------|
-| **Signal** | 40 pts | BUY/SELL recommendation strength |
-| **RSI** | 30 pts | Room to grow (40-60 ideal) vs overbought (>70) |
-| **MACD** | 20 pts | Momentum direction and strength |
-| **MA Alignment** | 10 pts | Price vs moving average positioning |
-
-### Allocation Logic
-
-The tool calculates weighted allocation based on each stock's technical score:
-
-```
-Total Score = SPY (90) + VOO (90) + SCHG (75) = 255
-
-SPY  = (90/255) × $100 = $35.29
-VOO  = (90/255) × $100 = $35.29
-SCHG = (75/255) × $100 = $29.41
-```
-
-### Example Output
-
-```
-╔══════════════════════════════════════════════════════════════════════════╗
-║                              DCA Analysis                                ║
-╠══════════════════════════════════════════════════════════════════════════╣
-║  Monthly Investment: $ 100.00                                            ║
-║──────────────────────────────────────────────────────────────────────────║
-║  Ticker    Price      Signal        RSI   MACD  Score     Alloc  Shares  ║
-║  SPY      $754.95    STRONG BUY    59.7   +1.0     90   $35.32  0.0468  ║
-║  VOO      $693.86    STRONG BUY    60.0   +0.9     90   $35.32  0.0509  ║
-║  SCHG      $34.65    STRONG BUY    60.4   +0.1     75   $29.37  0.8475  ║
-║──────────────────────────────────────────────────────────────────────────║
-║  Recommended Allocation:                                                 ║
-║  - Top pick: SPY ($35.32)                                                ║
-║  - Best signal: STRONG BUY | RSI: 59.72 | Score: 90/100                 ║
-╚══════════════════════════════════════════════════════════════════════════╝
-```
-
-## Telegram Alerts (Watch Mode)
-
-Set up a Telegram bot to receive alerts when technical signals change.
-
-### Setup
-
-1. Create a Telegram bot via [@BotFather](https://t.me/botfather)
-2. Get your chat ID (send a message to [@userinfobot](https://t.me/userinfobot))
-3. Copy `config.yaml.example` to `config.yaml` and fill in credentials:
+1. Buat bot via [@BotFather](https://t.me/botfather)
+2. Dapatkan chat ID via [@userinfobot](https://t.me/userinfobot)
+3. Copy `config.yaml.example` ke `config.yaml` dan isi credentials:
 
 ```yaml
 telegram:
@@ -266,15 +79,83 @@ watch:
     - BBRI
     - TLKM
   interval_minutes: 55
-
-alerts:
-  signal_change: true
-  ma_crossover: true
-  rsi_breach: true
-  macd_flip: true
 ```
 
-### Run Watcher
+### 4. Konfigurasi
+
+| Variable | Deskripsi |
+|----------|-----------|
+| `STOCK_CHECK_BOT_TOKEN` | Telegram bot token |
+| `STOCK_CHECK_CHAT_ID` | Telegram chat ID |
+
+## Commands
+
+### Check Saham
+
+```bash
+# IDX (default, tanpa --exchange)
+uv run stock-check --check BBCA
+
+# US stocks (requires --exchange US)
+uv run stock-check --check SCHG --exchange US
+
+# Custom interval
+uv run stock-check --check BBCA --interval 1wk
+
+# Custom lookback
+uv run stock-check --check BBCA --day 5
+
+# Custom MA periods
+uv run stock-check --check BBCA --ma 5,20,50,200
+```
+
+### List Saham
+
+```bash
+# IDX30
+uv run stock-check --list idx30
+
+# US ETFs
+uv run stock-check --list etf --exchange US
+```
+
+### Screener
+
+```bash
+# Full IDX scan (873 stocks)
+uv run stock-check --screener
+
+# Filter by sector
+uv run stock-check --screener --sector mining_coal
+
+# Custom filters
+uv run stock-check --screener --min-volume 500000 --min-price 100 --top 10
+```
+
+### DCA Analysis
+
+```bash
+# IDX
+uv run stock-check --check BBCA,BBRI,TLKM --dca --amount 1000000
+
+# US
+uv run stock-check --check SCHG,SPY,QQQ --exchange US --dca --amount 100
+```
+
+### Daily Recommendation
+
+```bash
+# Run recommendation
+uv run stock-check --recommend
+
+# Save report
+uv run stock-check --recommend --save-report
+
+# Send to Telegram
+uv run stock-check --recommend --recommend-telegram
+```
+
+### Watch Mode (Telegram Alerts)
 
 ```bash
 # Run once (test mode)
@@ -282,39 +163,57 @@ uv run stock-check-watch --dry-run --once
 
 # Run as daemon
 uv run stock-check-watch
-
-# Use environment variables for credentials
-STOCK_CHECK_BOT_TOKEN="your_token" STOCK_CHECK_CHAT_ID="your_id" uv run stock-check-watch
 ```
 
-### Alert Types
+## IDX Stock Sectors
 
-| Alert | Priority | Description |
-|-------|----------|-------------|
-| Signal change | P1 | STRONG BUY → BUY, etc. |
-| MA crossover | P1 | Golden cross (MA5 ↑ MA20) or death cross |
-| RSI breach | P2 | RSI > 70 (overbought) or < 30 (oversold) |
-| MACD flip | P2 | Histogram crosses zero |
-| Volume spike | P2 | Volume > 2x average |
+873 unique stocks across 19 sectors:
 
-## Configuration
+| Sector | Stocks | Tier |
+|--------|--------|------|
+| Finance / Banking | 50 | blue_chip |
+| Mining / Coal | 56 | blue_chip |
+| Consumer / Food & Beverage | 49 | blue_chip |
+| Infrastructure | 30 | blue_chip |
+| Consumer / Tobacco | 3 | blue_chip |
+| Basic Materials | 57 | mid_cap |
+| Industrial | 54 | mid_cap |
+| Property & Real Estate | 53 | mid_cap |
+| Technology | 46 | mid_cap |
+| Transportation & Logistics | 43 | mid_cap |
+| Trade & Services | 37 | small_cap |
+| Agriculture | 34 | mid_cap |
+| Finance / Insurance | 29 | mid_cap |
+| Healthcare | 25 | mid_cap |
+| Hotels & Tourism | 18 | small_cap |
+| Consumer / Household | 13 | mid_cap |
+| Energy | 12 | mid_cap |
+| Investment | 7 | small_cap |
+| Miscellaneous | 257 | small_cap |
 
-### Environment Variables
+### Programmatic Access
 
-| Variable | Description |
-|----------|-------------|
-| `STOCK_CHECK_BOT_TOKEN` | Telegram bot token |
-| `STOCK_CHECK_CHAT_ID` | Telegram chat ID |
+```python
+from stock_checker.idx_stocks import (
+    get_all_idx_stocks,           # List all 873 tickers
+    get_idx_stocks_by_sector,     # Get tickers by sector
+    get_sector_for_ticker,        # Reverse lookup: ticker → sector
+    get_sector_info,              # Sector metadata (name, tier, description)
+    get_sector_names,             # List all sector keys
+    validate_sectors,             # Check for duplicates
+)
 
-### config.yaml
-
-See `config.yaml.example` for all available options.
+# Example: find which sector BBCA belongs to
+sector = get_sector_for_ticker("BBCA")  # → "finance_banking"
+info = get_sector_info(sector)
+print(f"{info.name} ({info.tier})")  # → "Finance / Banking (blue_chip)"
+```
 
 ## Technical Indicators
 
 ### Moving Averages
 
-MA periods adapt to candle interval for consistent time horizons:
+MA periods adapt to candle interval:
 
 | Interval | MA Periods | Time Span |
 |----------|------------|-----------|
@@ -322,7 +221,7 @@ MA periods adapt to candle interval for consistent time horizons:
 | 1wk (weekly) | MA4, MA12, MA24 | 1m, 1q, 6m |
 | 1mo (monthly) | MA3, MA6, MA12 | 1q, 6m, 1y |
 
-**Override:** Use `--ma 5,20,50,200` to specify custom periods instead of the defaults.
+**Override:** `--ma 5,20,50,200`
 
 ### RSI (Relative Strength Index)
 
@@ -336,6 +235,32 @@ MA periods adapt to candle interval for consistent time horizons:
 - Bearish: histogram < 0
 - Crossover: histogram flips sign
 
+## Architecture
+
+```
+src/stock_checker/
+├── cli.py              — Thin dispatcher (~130 lines)
+├── scanner.py          — Shared scan engine
+├── commands/
+│   ├── check.py        — --check mode
+│   ├── list_cmd.py     — --list mode
+│   ├── dca.py          — --dca mode
+│   ├── screener.py     — --screener mode
+│   └── recommend.py    — --recommend mode
+├── screener.py         — Scoring + recommendations
+├── formatter.py        — All formatting
+├── notifier.py         — Telegram + formatting
+├── indicators.py       — MA, RSI, MACD
+├── fetcher.py          — yfinance wrapper
+├── exchanges.py        — Exchange registry
+├── config.py           — Config loader
+├── idx_stocks.py       — Stock data (873 tickers, 19 sectors)
+├── dca.py              — DCA analysis
+├── alert_engine.py     — Alert triggers
+├── cache.py            — File cache
+└── watcher.py          — Watch daemon
+```
+
 ## Development
 
 ```bash
@@ -347,6 +272,9 @@ uv run ruff check src/
 
 # Run formatter
 uv run ruff format src/
+
+# Run tests
+uv run pytest
 ```
 
 ## License

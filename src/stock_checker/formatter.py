@@ -421,3 +421,90 @@ def format_csv(
     lines.append(line)
 
     return "\n".join(lines)
+
+
+def format_recommendation_terminal(rec, currency_symbol: str = "Rp") -> str:
+    """Format recommendation as detailed terminal output."""
+    from io import StringIO
+    from rich.console import Console
+
+    buf = StringIO()
+    console = Console(file=buf, width=80)
+
+    console.print()
+    console.print(f"[bold cyan]📊 Daily Stock Recommendations — {rec.date}[/bold cyan]")
+    console.print("─" * 60)
+
+    sector_label = rec.sector.upper() if rec.sector else "ALL"
+    console.print(f"Scanned: {rec.total_scanned} stocks | Sector: {sector_label} | Min Score: {rec.min_score:.0f}")
+    console.print()
+
+    if not rec.recommendations:
+        console.print("[yellow]No stocks met the minimum score threshold.[/yellow]")
+        console.print()
+        return buf.getvalue()
+
+    for i, stock in enumerate(rec.recommendations, 1):
+        score_label = stock["score_label"]
+        score = stock["score"]
+        ticker = stock["ticker"]
+        price = stock["last_price"]
+        change = stock["change"]
+        change_pct = stock["change_pct"]
+        rsi = stock.get("rsi")
+        macd = stock.get("macd")
+
+        if score >= 75:
+            score_color = "bold green"
+        elif score >= 60:
+            score_color = "green"
+        elif score >= 45:
+            score_color = "yellow"
+        else:
+            score_color = "red"
+
+        change_color = "green" if change >= 0 else "red"
+
+        if rsi is not None:
+            if rsi >= 70:
+                rsi_status = "[red]overbought[/red]"
+            elif rsi <= 30:
+                rsi_status = "[green]oversold[/green]"
+            else:
+                rsi_status = "neutral"
+            rsi_text = f"RSI: {rsi:.1f} ({rsi_status})"
+        else:
+            rsi_text = "RSI: —"
+
+        if macd is not None:
+            hist = macd.get("histogram", 0)
+            macd_arrow = "▲" if hist >= 0 else "▼"
+            macd_color = "green" if hist >= 0 else "red"
+            macd_text = f"MACD: {hist:+.1f} [{macd_color}]{macd_arrow} bullish[/{macd_color}]" if hist >= 0 else f"MACD: {hist:+.1f} [{macd_color}]{macd_arrow} bearish[/{macd_color}]"
+        else:
+            macd_text = "MACD: —"
+
+        mas = stock.get("mas", {})
+        ma20 = mas.get("MA20")
+        ma50 = mas.get("MA50")
+        ma_checks = []
+        if ma20 and price >= ma20:
+            ma_checks.append("MA20 ✓")
+        if ma50 and price >= ma50:
+            ma_checks.append("MA50 ✓")
+        if ma20 and ma50 and ma20 > ma50:
+            ma_checks.append("MA20>MA50 ✓")
+        ma_text = " | ".join(ma_checks) if ma_checks else "No MA alignment"
+
+        console.print(f"[bold]{i}. {ticker}[/bold] — [{score_color}]{score_label}[/{score_color}] (Score: {score:.0f})")
+        console.print(f"   Price: {currency_symbol} {price:,.0f} ([{change_color}]{change:+,.0f} ({change_pct:+.1f}%)[/{change_color}])")
+        console.print(f"   {rsi_text} | {macd_text}")
+        console.print(f"   MA alignment: {ma_text}")
+        console.print()
+
+    console.print("─" * 60)
+    console.print("[dim]Action Guide: STRONG BUY (75-100) | BUY (60-74)[/dim]")
+    console.print("[dim]⚠️ For educational purposes only. Do your own research.[/dim]")
+    console.print()
+
+    return buf.getvalue()

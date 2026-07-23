@@ -2,7 +2,18 @@
 
 from __future__ import annotations
 
+import json
+import logging
+import time
+from dataclasses import dataclass
+from datetime import date, timezone, timedelta
+
 import pandas as pd
+
+logger = logging.getLogger(__name__)
+
+# WIB timezone (UTC+7)
+_WIB = timezone(timedelta(hours=7))
 
 
 def calculate_screener_score(
@@ -328,3 +339,136 @@ def screen_stocks(stocks: list[dict]) -> list[dict]:
 
     results.sort(key=lambda x: x["score"], reverse=True)
     return results
+
+
+# ---------------------------------------------------------------------------
+# Daily recommendation (merged from recommender.py)
+# ---------------------------------------------------------------------------
+
+_SIGNAL_THRESHOLDS = {
+    "STRONG BUY": 75.0,
+    "BUY": 60.0,
+    "WATCH": 45.0,
+    "AVOID": 30.0,
+}
+
+
+@dataclass
+class DailyRecommendation:
+    """Structured daily recommendation output."""
+
+    date: str
+    total_scanned: int
+    recommendations: list[dict]
+    sector: str | None
+    scan_duration: float
+    min_score: float
+    errors: int = 0
+
+
+def run_daily_scan(
+    sector: str | None = None,
+    min_score: float = 60.0,
+    top_n: int = 10,
+    min_volume: float = 1_000_000,
+    min_price: float = 50.0,
+    interval: str = "1d",
+) -> DailyRecommendation:
+    """Run full screener scan and return recommendations."""
+    from stock_checker.idx_stocks import get_all_idx_stocks, get_idx_stocks_by_sector, get_sector_names
+    from stock_checker.scanner import scan_stocks
+
+    start_time = time.time()
+
+    if sector:
+        if sector not in get_sector_names():
+            raise ValueError(f"Unknown sector: {sector}. Available: {', '.join(get_sector_names())}")
+        all_stocks = get_idx_stocks_by_sector(sector)
+    else:
+        all_stocks = get_all_idx_stocks()
+
+    logger.info("Scanning %d stocks in sector: %s", len(all_stocks), sector or "ALL")
+
+    scan_results = scan_stocks(
+        all_stocks,
+        days=30,
+        interval=interval,
+        min_price=min_price,
+        min_volume=min_volume,
+        min_score=min_score,
+        include_score=True,
+    )
+
+    top_results = [
+        {
+            "ticker": r.ticker,
+            "last_price": r.last_price,
+            "change": r.change,
+            "change_pct": r.change_pct,
+            "rsi": r.rsi,
+            "macd": r.macd,
+            "mas": r.mas,
+            "signal_label": r.signal_label,
+            "score": r.score,
+            "score_label": r.score_label,
+            "components": r.score_components,
+        }
+        for r in scan_results[:top_n]
+    ]
+
+    duration = time.time() - start_time
+
+    return DailyRecommendation(
+        date=date.today().isoformat(),
+        total_scanned=len(all_stocks),
+        recommendations=top_results,
+        sector=sector,
+        scan_duration=duration,
+        min_score=min_score,
+        errors=0,
+    )
+
+
+def format_recommendation_json(rec: DailyRecommendation) -> str:
+    """Format recommendation as JSON for logging/analysis."""
+    output = {
+        "date": rec.date,
+        "total_scanned": rec.total_scanned,
+        "sector": rec.sector,
+        "min_score": rec.min_score,
+        "scan_duration_seconds": round(rec.scan_duration, 2),
+        "errors": rec.errors,
+        "recommendations": [
+            {
+                "ticker": s["ticker"],
+                "score": s["score"],
+                "score_label": s["score_label"],
+                "last_price": s["last_price"],
+                "change": s["change"],
+                "change_pct": s["change_pct"],
+                "rsi": s.get("rsi"),
+                "macd_histogram": s.get("macd", {}).get("histogram") if s.get("macd") else None,
+                "signal_label": s.get("signal_label"),
+                "components": s.get("components", {}),
+            }
+            for s in rec.recommendations
+        ],
+    }
+
+    return json.dumps(output, indent=2)
+
+
+def save_recommendation(rec: DailyRecommendation, directory: str = "reports") -> str:
+    """Save recommendation to JSON file for historical tracking."""
+    from pathlib import Path
+
+    report_dir = Path(directory)
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    filename = f"daily_{rec.date}.json"
+    filepath = report_dir / filename
+
+    filepath.write_text(format_recommendation_json(rec), encoding="utf-8")
+    logger.info("Saved recommendation to %s", filepath)
+
+    return str(filepath)
